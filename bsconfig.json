@@ -14,5 +14,6 @@
   "bs-dependencies": [],
   "warnings": {
     "error": "+101"
-  }
+  },
+  "external-stdlib": "@rescript/std"
 }

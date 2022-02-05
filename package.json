@@ -22,6 +22,9 @@
   "repository": "github:rpominov/rescript-path-rebuild",
   "license": "MIT",
   "dependencies": {
+    "@rescript/std": "^9.1.3"
+  },
+  "devDependencies": {
     "rescript": "^9.1.4"
   }
 }

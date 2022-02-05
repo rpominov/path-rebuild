@@ -1,5 +1,53 @@
-type node = Sep | Range(int, int) | Index(int) | Literal(string)
+type node = Sep | Range(int, int) | Literal(string)
 type status = L(string) | S(string) | I(string) | R(string, string)
+
+@module("path") external osPathSep: string = "sep"
+@module("path") external isAbsolute: string => bool = "isAbsolute"
+@module("path") external normalize: string => string = "normalize"
+@module("path") external extname: string => string = "extname"
+
+// module Path = {
+//   type t = {
+//     dir: string,
+//     root: string,
+//     base: string,
+//     name: string,
+//     ext: string,
+//   }
+//   @module("path") external format: t => string = "format"
+//   @module("path") external parse: string => t = "parse"
+
+//   @module("path") external basename: string => string = "basename"
+
+//   @module("path")
+//   external basenameExt: (string, string) => string = "basename"
+
+//   @module("path") external delimiter: string = "delimiter"
+
+//   @module("path") external dirname: string => string = "dirname"
+
+//   @module("path") external extname: string => string = "extname"
+
+//   @module("path") external isAbsolute: string => bool = "isAbsolute"
+
+//   @module("path") @variadic
+//   external join: array<string> => string = "join"
+
+//   @module("path") external join2: (string, string) => string = "join"
+
+//   @module("path") external normalize: string => string = "normalize"
+
+//   @module("path")
+//   external relative: (~from: string, ~to_: string) => string = "relative"
+
+//   @module("path") @variadic
+//   external resolve: array<string> => string = "resolve"
+
+//   @module("path") external sep: string = "sep"
+
+//   @module("path")
+//   external toNamespacedPath: string => string = "toNamespacedPath"
+// }
 
 %%private(
   @val external int: string => float = "Number"
@@ -17,7 +65,7 @@ type status = L(string) | S(string) | I(string) | R(string, string)
     | L(s) => result->append(Literal(s))->Ok
     | I(n) =>
       switch n->int {
-      | Some(n') => result->append(Index(n'))->Ok
+      | Some(n') => result->append(Range(n', n'))->Ok
       | None => Error(`Bad range limit: ${n}`)
       }
     | R(n, m) =>
@@ -41,7 +89,7 @@ type status = L(string) | S(string) | I(string) | R(string, string)
         }
       | None => Error(`Bad range limit: ${n}`)
       }
-    | S(_) => invalid_arg("Cannot commit a Skip")
+    | S(_) => Js.Exn.raiseError("Cannot commit a Skip")
     }
   }
 
@@ -85,3 +133,36 @@ let rec parse = (str, i, maybeStatus, maybeResult: result<array<node>, string>):
   }
 }
 let parse = str => parse(str, 0, Some(L("")), Ok([]))
+
+let printRange = (parts, min, max, sep) => {
+  let len = parts->Js.Array2.length
+  let min = min < 0 ? len - min : min
+  let max = Js.Math.min_int(len - 1, max < 0 ? len - max : max)
+  let rec helper = st => {
+    let i = min + st
+    i === max ? parts[i] : parts[i] ++ (st === len - 2 ? "" : sep) ++ helper(st + 1)
+  }
+  max < min ? "" : helper(0)
+}
+
+let print = (~sep=osPathSep, nodes, path): result<string, string> => {
+  if path->isAbsolute {
+    Error("An absolute path cannot be used as a source path")
+  } else {
+    let ext = path->extname
+    let withoutExt =
+      path->Js.String2.substring(~from=0, ~to_=path->Js.String2.length - ext->Js.String2.length)
+    let parts = withoutExt->Js.String2.split(sep)->append(ext)
+    nodes
+    ->Js.Array2.map(node =>
+      switch node {
+      | Literal(s) => s
+      | Sep => sep
+      | Range(min, max) => printRange(parts, min, max, sep)
+      }
+    )
+    ->Js.Array2.joinWith("")
+    ->normalize
+    ->Ok
+  }
+}
