@@ -91,43 +91,44 @@ function commit(result, status) {
 
 function parse(str) {
   var _i = 0;
-  var _maybeStatus = {
+  var _mStatus = {
     TAG: /* L */0,
     _0: ""
   };
-  var _maybeResult = {
+  var _mResult = {
     TAG: /* Ok */0,
     _0: []
   };
   while(true) {
-    var maybeResult = _maybeResult;
-    var maybeStatus = _maybeStatus;
+    var mResult = _mResult;
+    var mStatus = _mStatus;
     var i = _i;
-    if (maybeResult.TAG !== /* Ok */0) {
+    if (mResult.TAG !== /* Ok */0) {
       return {
               TAG: /* Error */1,
               _0: i - 1 | 0,
-              _1: maybeResult._0
+              _1: mResult._0
             };
     }
-    var result = maybeResult._0;
-    if (maybeStatus === undefined) {
+    var result = mResult._0;
+    if (mStatus === undefined) {
       return {
               TAG: /* Ok */0,
               _0: result
             };
     }
     var ch = str.charAt(i);
+    var i$p = i + 1 | 0;
     var exit = 0;
     var exit$1 = 0;
     var exit$2 = 0;
     switch (ch) {
       case "" :
-          switch (maybeStatus.TAG | 0) {
+          switch (mStatus.TAG | 0) {
             case /* L */0 :
-                _maybeResult = commit(result, maybeStatus);
-                _maybeStatus = undefined;
-                _i = i + 1 | 0;
+                _mResult = commit(result, mStatus);
+                _mStatus = undefined;
+                _i = i$p;
                 continue ;
             case /* S */1 :
                 return {
@@ -145,7 +146,7 @@ function parse(str) {
             
           }
       case "." :
-          switch (maybeStatus.TAG | 0) {
+          switch (mStatus.TAG | 0) {
             case /* L */0 :
                 exit = 1;
                 break;
@@ -153,44 +154,36 @@ function parse(str) {
                 exit$2 = 4;
                 break;
             case /* I */2 :
-                _maybeResult = {
-                  TAG: /* Ok */0,
-                  _0: result
-                };
-                _maybeStatus = {
+                _mStatus = {
                   TAG: /* R */3,
-                  _0: maybeStatus._0,
+                  _0: mStatus._0,
                   _1: ""
                 };
-                _i = i + 1 | 0;
+                _i = i$p;
                 continue ;
             case /* R */3 :
-                if (maybeStatus._1 !== "") {
+                if (mStatus._1 !== "") {
                   return {
                           TAG: /* Error */1,
                           _0: i,
                           _1: "Unexpected range delimeter character"
                         };
                 }
-                _maybeResult = {
-                  TAG: /* Ok */0,
-                  _0: result
-                };
-                _maybeStatus = maybeStatus;
-                _i = i + 1 | 0;
+                _mStatus = mStatus;
+                _i = i$p;
                 continue ;
             
           }
           break;
       case "/" :
-          switch (maybeStatus.TAG | 0) {
+          switch (mStatus.TAG | 0) {
             case /* L */0 :
-                _maybeResult = {
+                _mResult = {
                   TAG: /* Ok */0,
                   _0: result.concat(/* Sep */0)
                 };
-                _maybeStatus = maybeStatus;
-                _i = i + 1 | 0;
+                _mStatus = mStatus;
+                _i = i$p;
                 continue ;
             case /* S */1 :
                 exit$2 = 4;
@@ -203,32 +196,28 @@ function parse(str) {
           }
           break;
       case "\\" :
-          if (maybeStatus.TAG !== /* L */0) {
+          if (mStatus.TAG !== /* L */0) {
             return {
                     TAG: /* Error */1,
                     _0: i,
                     _1: "Unexpected escape character"
                   };
           }
-          _maybeResult = {
-            TAG: /* Ok */0,
-            _0: result
-          };
-          _maybeStatus = {
+          _mStatus = {
             TAG: /* S */1,
-            _0: maybeStatus._0
+            _0: mStatus._0
           };
-          _i = i + 1 | 0;
+          _i = i$p;
           continue ;
       case "{" :
-          switch (maybeStatus.TAG | 0) {
+          switch (mStatus.TAG | 0) {
             case /* L */0 :
-                _maybeResult = commit(result, maybeStatus);
-                _maybeStatus = {
+                _mResult = commit(result, mStatus);
+                _mStatus = {
                   TAG: /* I */2,
                   _0: ""
                 };
-                _i = i + 1 | 0;
+                _i = i$p;
                 continue ;
             case /* S */1 :
                 exit$2 = 4;
@@ -241,7 +230,7 @@ function parse(str) {
           }
           break;
       case "}" :
-          switch (maybeStatus.TAG | 0) {
+          switch (mStatus.TAG | 0) {
             case /* L */0 :
                 exit$1 = 3;
                 break;
@@ -259,16 +248,12 @@ function parse(str) {
         exit$2 = 4;
     }
     if (exit$2 === 4) {
-      if (maybeStatus.TAG === /* S */1) {
-        _maybeResult = {
-          TAG: /* Ok */0,
-          _0: result
-        };
-        _maybeStatus = {
+      if (mStatus.TAG === /* S */1) {
+        _mStatus = {
           TAG: /* L */0,
-          _0: maybeStatus._0 + ch
+          _0: mStatus._0 + ch
         };
-        _i = i + 1 | 0;
+        _i = i$p;
         continue ;
       }
       exit$1 = 3;
@@ -299,50 +284,38 @@ function parse(str) {
     }
     switch (exit) {
       case 1 :
-          switch (maybeStatus.TAG | 0) {
+          switch (mStatus.TAG | 0) {
             case /* L */0 :
-                _maybeResult = {
-                  TAG: /* Ok */0,
-                  _0: result
-                };
-                _maybeStatus = {
+                _mStatus = {
                   TAG: /* L */0,
-                  _0: maybeStatus._0 + ch
+                  _0: mStatus._0 + ch
                 };
-                _i = i + 1 | 0;
+                _i = i$p;
                 continue ;
             case /* I */2 :
-                _maybeResult = {
-                  TAG: /* Ok */0,
-                  _0: result
-                };
-                _maybeStatus = {
+                _mStatus = {
                   TAG: /* I */2,
-                  _0: maybeStatus._0 + ch
+                  _0: mStatus._0 + ch
                 };
-                _i = i + 1 | 0;
+                _i = i$p;
                 continue ;
             case /* R */3 :
-                _maybeResult = {
-                  TAG: /* Ok */0,
-                  _0: result
-                };
-                _maybeStatus = {
+                _mStatus = {
                   TAG: /* R */3,
-                  _0: maybeStatus._0,
-                  _1: maybeStatus._1 + ch
+                  _0: mStatus._0,
+                  _1: mStatus._1 + ch
                 };
-                _i = i + 1 | 0;
+                _i = i$p;
                 continue ;
             
           }
       case 2 :
-          _maybeResult = commit(result, maybeStatus);
-          _maybeStatus = {
+          _mResult = commit(result, mStatus);
+          _mStatus = {
             TAG: /* L */0,
             _0: ""
           };
-          _i = i + 1 | 0;
+          _i = i$p;
           continue ;
       
     }
