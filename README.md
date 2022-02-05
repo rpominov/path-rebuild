@@ -1,4 +1,4 @@
-# path-rebuild
+# rescript-path-rebuild
 
 Transform a file path by splitting the original path into an array of parts
 and defining a new path in terms of indices of the parts.
@@ -11,7 +11,7 @@ and defining a new path in terms of indices of the parts.
 ## Installation
 
 ```sh
-npm i path-rebuild
+npm i rescript-path-rebuild
 ```
 
 In your `bsconfig.json` add it to `bs-dependencies`
@@ -19,7 +19,7 @@ In your `bsconfig.json` add it to `bs-dependencies`
 ```
 {
   ...,
-  "bs-dependencies": [..., "path-rebuild"],
+  "bs-dependencies": [..., "rescript-path-rebuild"],
 }
 ```
 

@@ -1,5 +1,5 @@
 {
-  "name": "path-rebuild",
+  "name": "rescript-path-rebuild",
   "version": "0.0.1",
   "namespace": false,
   "sources": {
