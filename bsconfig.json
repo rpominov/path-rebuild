@@ -1,7 +1,7 @@
 {
-  "name": "rescript-project-template",
+  "name": "path-rebuild",
   "version": "0.0.1",
-  "namespace": true,
+  "namespace": false,
   "sources": {
     "dir": ".",
     "subdirs": false
