@@ -3,13 +3,18 @@
 
 
 function each(data, title, f) {
-  return test.each(data)(title + " (%#) %p", f);
+  return test.each(data)(title, f);
 }
 
 function each2(data, title, f) {
-  return test.each(data)(title + " (%#) %p %p", f);
+  return test.each(data)(title, f);
+}
+
+function each3(data, title, f) {
+  return test.each(data)(title, f);
 }
 
 exports.each = each;
 exports.each2 = each2;
+exports.each3 = each3;
 /* No side effect */

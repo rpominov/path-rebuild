@@ -2,98 +2,94 @@
 
 exports[`Absolute path 1`] = `"An absolute path cannot be used as a source path"`;
 
-exports[`Parse errors (0) "test/{1..0}/{-2}.js" 1`] = `
-"test/{1..0}/{-2}.js
-          ^
-Bad range limits: 1..0"
-`;
-
-exports[`Parse errors (1) "test/{2..1}/{-2}.js" 1`] = `
-"test/{2..1}/{-2}.js
-          ^
-Bad range limits: 2..1"
-`;
-
-exports[`Parse errors (2) "test/{-1..1}/{-2}.js" 1`] = `
-"test/{-1..1}/{-2}.js
-           ^
-Bad range limits: -1..1"
-`;
-
-exports[`Parse errors (3) "test/{-1..-2}/{-2}.js" 1`] = `
-"test/{-1..-2}/{-2}.js
-            ^
-Bad range limits: -1..-2"
-`;
-
-exports[`Parse errors (4) "test/{1..0a}/{-2}.js" 1`] = `
-"test/{1..0a}/{-2}.js
-           ^
-Bad range limit: 0a"
-`;
-
-exports[`Parse errors (5) "test/{0a}/{-2}.js" 1`] = `
-"test/{0a}/{-2}.js
-        ^
-Bad range limit: 0a"
-`;
-
-exports[`Parse errors (6) "{-2}.js\\\\" 1`] = `
+exports[`Parse errors {-2}.js\\ 1`] = `
 "{-2}.js\\\\
         ^
 Unexpected end of string. Expected a character after the escape symbol"
 `;
 
-exports[`Parse errors (7) "foo/{-2.." 1`] = `
+exports[`Parse errors foo/{-2.. 1`] = `
 "foo/{-2..
          ^
 Unexpected end of string. Did you forget to close a range?"
 `;
 
-exports[`Parse errors (8) "test/{1..2.1}/{-2}.js" 1`] = `
-"test/{1..2.1}/{-2}.js
-          ^
-Unexpected . symbol"
+exports[`Parse errors test/{-1..-2}/{-2}.js 1`] = `
+"test/{-1..-2}/{-2}.js
+            ^
+Bad range limits: -1..-2"
 `;
 
-exports[`Parse errors (9) "test/{1...2}/{-2}.js" 1`] = `
+exports[`Parse errors test/{-1..1}/{-2}.js 1`] = `
+"test/{-1..1}/{-2}.js
+           ^
+Bad range limits: -1..1"
+`;
+
+exports[`Parse errors test/{0a}/{-2}.js 1`] = `
+"test/{0a}/{-2}.js
+        ^
+Bad range limit: 0a"
+`;
+
+exports[`Parse errors test/{1...2}/{-2}.js 1`] = `
 "test/{1...2}/{-2}.js
          ^
 Unexpected . symbol"
 `;
 
-exports[`Parse errors (10) "test/{1.2}/{-2}.js" 1`] = `
+exports[`Parse errors test/{1..0}/{-2}.js 1`] = `
+"test/{1..0}/{-2}.js
+          ^
+Bad range limits: 1..0"
+`;
+
+exports[`Parse errors test/{1..0a}/{-2}.js 1`] = `
+"test/{1..0a}/{-2}.js
+           ^
+Bad range limit: 0a"
+`;
+
+exports[`Parse errors test/{1..2.1}/{-2}.js 1`] = `
+"test/{1..2.1}/{-2}.js
+          ^
+Unexpected . symbol"
+`;
+
+exports[`Parse errors test/{1.2}/{-2}.js 1`] = `
 "test/{1.2}/{-2}.js
         ^
 Unexpected character: 2. Was expecting a . symbol"
 `;
 
-exports[`Parse errors (11) "test/{1\\\\..2}/{-2}.js" 1`] = `
-"test/{1\\\\..2}/{-2}.js
-       ^
-Unexpected escape symbol inside a range"
-`;
-
-exports[`Parse errors (12) "test/{1{..2}/{-2}.js" 1`] = `
-"test/{1{..2}/{-2}.js
-       ^
-Unexpected { symbol inside a range"
-`;
-
-exports[`Parse errors (13) "test/{1/..2}/{-2}.js" 1`] = `
+exports[`Parse errors test/{1/..2}/{-2}.js 1`] = `
 "test/{1/..2}/{-2}.js
        ^
 Unexpected / symbol inside a range"
 `;
 
-exports[`Parse errors (14) "test}/{1..2}/{-2}.js" 1`] = `
+exports[`Parse errors test/{1\\..2}/{-2}.js 1`] = `
+"test/{1\\\\..2}/{-2}.js
+       ^
+Unexpected escape symbol inside a range"
+`;
+
+exports[`Parse errors test/{1{..2}/{-2}.js 1`] = `
+"test/{1{..2}/{-2}.js
+       ^
+Unexpected { symbol inside a range"
+`;
+
+exports[`Parse errors test/{2..1}/{-2}.js 1`] = `
+"test/{2..1}/{-2}.js
+          ^
+Bad range limits: 2..1"
+`;
+
+exports[`Parse errors test}/{1..2}/{-2}.js 1`] = `
 "test}/{1..2}/{-2}.js
     ^
 Unexpected } symbol"
 `;
-
-exports[`Transform (0) "{0..-3}/{-2}.js" "file.sql" 1`] = `"file.js"`;
-
-exports[`Transform (1) "{0..-4}/{-2}.js" "a/b/c/d/file.sql" 1`] = `"a/b/c/file.js"`;
 
 exports[`Unconventional separator 1`] = `"a#b#c#file.js"`;

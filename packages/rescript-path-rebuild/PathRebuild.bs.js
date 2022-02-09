@@ -174,11 +174,20 @@ function parse(str) {
       case "/" :
           switch (mStatus.TAG | 0) {
             case /* L */0 :
-                _mResult = {
-                  TAG: /* Ok */0,
-                  _0: result.concat(/* Sep */0)
+                var r = commit(result, mStatus);
+                var tmp;
+                tmp = r.TAG === /* Ok */0 ? ({
+                      TAG: /* Ok */0,
+                      _0: r._0.concat(/* Sep */0)
+                    }) : ({
+                      TAG: /* Error */1,
+                      _0: r._0
+                    });
+                _mResult = tmp;
+                _mStatus = {
+                  TAG: /* L */0,
+                  _0: ""
                 };
-                _mStatus = mStatus;
                 _i = i$p;
                 continue ;
             case /* S */1 :
@@ -353,7 +362,7 @@ function make(str) {
                     }
                     var max = node._1;
                     var min = node._0;
-                    var min$1 = min < 0 ? len + min | 0 : min;
+                    var min$1 = Math.max(0, min < 0 ? len + min | 0 : min);
                     var max$1 = Math.min(len - 1 | 0, max < 0 ? len + max | 0 : max);
                     if (max$1 < min$1) {
                       return ;
@@ -380,33 +389,29 @@ function make(str) {
                       return [];
                     }
                   });
-              var arr = Caml_splice_call.spliceObjApply([], "concat", [__x]).map(function (node) {
-                    if (typeof node === "number") {
-                      return sep$1;
-                    } else if (node.TAG === /* Range */0) {
-                      var min = node._0;
-                      var max = node._1;
-                      var helper = function (st) {
-                        var i = min + st | 0;
-                        if (i === max) {
-                          return Caml_array.get(parts, i);
-                        } else {
-                          return Caml_array.get(parts, i) + (
-                                  st === (parts.length - 2 | 0) ? "" : sep$1
-                                ) + helper(st + 1 | 0);
-                        }
-                      };
-                      var r = helper(0);
-                      console.log(parts, min, max, r);
-                      return r;
-                    } else {
-                      return node._0;
-                    }
-                  });
-              console.log(arr);
               return {
                       TAG: /* Ok */0,
-                      _0: arr.join("")
+                      _0: Caml_splice_call.spliceObjApply([], "concat", [__x]).map(function (node) {
+                              if (typeof node === "number") {
+                                return sep$1;
+                              } else if (node.TAG === /* Range */0) {
+                                var min = node._0;
+                                var max = node._1;
+                                var helper = function (st) {
+                                  var i = min + st | 0;
+                                  if (i === max) {
+                                    return Caml_array.get(parts, i);
+                                  } else {
+                                    return Caml_array.get(parts, i) + (
+                                            i === (parts.length - 2 | 0) ? "" : sep$1
+                                          ) + helper(st + 1 | 0);
+                                  }
+                                };
+                                return helper(0);
+                              } else {
+                                return node._0;
+                              }
+                            }).join("")
                     };
             })
         };

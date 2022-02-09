@@ -83,7 +83,16 @@ let rec parse = (str, i, mStatus, mResult: result<array<node>, string>) => {
         | (".", D(n)) => parse(str, i', R(n, "")->Some, mResult)
         | (x, D(_)) => printError(str, i, `Unexpected character: ${x}. Was expecting a . symbol`)
         | (".", R(_, _)) => printError(str, i, "Unexpected . symbol")
-        | ("/", L(_)) => parse(str, i', status->Some, result->append(Sep)->Ok)
+        | ("/", L(_)) =>
+          parse(
+            str,
+            i',
+            L("")->Some,
+            switch result->commit(status) {
+            | Ok(r) => r->append(Sep)->Ok
+            | Error(m) => Error(m)
+            },
+          )
         | ("/", _) => printError(str, i, "Unexpected / symbol inside a range")
         | (_, L(s)) => parse(str, i', L(s ++ ch)->Some, mResult)
         | (_, I(n)) => parse(str, i', I(n ++ ch)->Some, mResult)
@@ -100,17 +109,12 @@ let printRange = (parts, min, max, sep) => {
     let i = min + st
     i === max
       ? parts[i]
-      : parts[i] ++ (st === parts->Js.Array2.length - 2 ? "" : sep) ++ helper(st + 1)
+      : parts[i] ++ (i === parts->Js.Array2.length - 2 ? "" : sep) ++ helper(st + 1)
   }
-  let r = helper(0)
-
-  Js.log4(parts, min, max, r)
-  r
+  helper(0)
 }
 
 let print = (~sep=osPathSep, nodes, path): result<string, string> => {
-  // Js.log(sep)
-
   if path->isAbsolute {
     Error("An absolute path cannot be used as a source path")
   } else {
@@ -120,12 +124,10 @@ let print = (~sep=osPathSep, nodes, path): result<string, string> => {
     let parts = withoutExt->Js.String2.split(sep)->append(ext)
     let len = parts->Js.Array2.length
 
-    // Js.log(parts)
-
     let norm = nodes->Js.Array2.map(node =>
       switch node {
       | Range(min, max) => {
-          let min = min < 0 ? len + min : min
+          let min = Js.Math.max_int(0, min < 0 ? len + min : min)
           let max = Js.Math.min_int(len - 1, max < 0 ? len + max : max)
           max < min ? None : Range(min, max)->Some
         }
@@ -133,27 +135,24 @@ let print = (~sep=osPathSep, nodes, path): result<string, string> => {
       }
     )
 
-    let arr =
-      norm
-      ->Js.Array2.mapi((node, i) =>
-        switch node {
-        | None => []
-        | Some(Sep) => i > 0 && norm[i - 1] === None ? [] : [Sep]
-        | Some(x) => [x]
-        }
-      )
-      ->Js.Array2.concatMany([], _)
-      ->Js.Array2.map(node =>
-        switch node {
-        | Literal(s) => s
-        | Sep => sep
-        | Range(min, max) => printRange(parts, min, max, sep)
-        }
-      )
-
-    Js.log(arr)
-
-    arr->Js.Array2.joinWith("")->Ok
+    norm
+    ->Js.Array2.mapi((node, i) =>
+      switch node {
+      | None => []
+      | Some(Sep) => i > 0 && norm[i - 1] === None ? [] : [Sep]
+      | Some(x) => [x]
+      }
+    )
+    ->Js.Array2.concatMany([], _)
+    ->Js.Array2.map(node =>
+      switch node {
+      | Literal(s) => s
+      | Sep => sep
+      | Range(min, max) => printRange(parts, min, max, sep)
+      }
+    )
+    ->Js.Array2.joinWith("")
+    ->Ok
   }
 }
 

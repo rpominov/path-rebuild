@@ -8,7 +8,10 @@ type e<'a>
 @send external toMatchSnapshot: e<'a> => unit = "toMatchSnapshot"
 
 @val external each: (array<'a>, . string, 'a => unit) => unit = "test.each"
-let each = (data, title, f) => each(data)(. `${title} (%#) %p`, f)
+let each = (data, title, f) => each(data)(. title, f)
 
 @val external each2: (array<('a, 'b)>, . string, ('a, 'b) => unit) => unit = "test.each"
-let each2 = (data, title, f) => each2(data)(. `${title} (%#) %p %p`, f)
+let each2 = (data, title, f) => each2(data)(. title, f)
+
+@val external each3: (array<('a, 'b, 'c)>, . string, ('a, 'b, 'c) => unit) => unit = "test.each"
+let each3 = (data, title, f) => each3(data)(. title, f)

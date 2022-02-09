@@ -1,6 +1,6 @@
 {
   "name": "rescript-path-rebuild",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Transform a file path by splitting the original path into an array of parts and defining a new path in terms of indices of the parts",
   "main": "./PathRebuild.bs.js",
   "scripts": {
@@ -19,8 +19,8 @@
   "contributors": [
     "Roman Pominov"
   ],
-  "homepage": "https://github.com/path-rebuild/packages/rescript-path-rebuild#readme",
-  "bugs": "https://github.com/path-rebuild/issues",
+  "homepage": "https://github.com/rpominov/path-rebuild/packages/rescript-path-rebuild#readme",
+  "bugs": "https://github.com/rpominov/path-rebuild/issues",
   "repository": {
     "type": "git",
     "url": "https://github.com/rpominov/path-rebuild.git",

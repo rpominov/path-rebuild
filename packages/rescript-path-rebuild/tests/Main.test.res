@@ -23,15 +23,34 @@ let msg = err =>
   "test/{1{..2}/{-2}.js",
   "test/{1/..2}/{-2}.js",
   "test}/{1..2}/{-2}.js",
-]->each("Parse errors", pattern => pattern->make->msg->expect->toMatchSnapshot)
+]->each("Parse errors %s", pattern => pattern->make->msg->expect->toMatchSnapshot)
 
-// TODO: more cases
-[("{0..-3}/{-2}.js", "file.sql"), ("{0..-4}/{-2}.js", "a/b/c/d/file.sql")]->each2("Transform", (
-  pattern,
-  path,
-) => {
+[
+  ("{10}", "file.sql", ""),
+  ("{10}/", "file.sql", ""),
+  ("/{10}/", "file.sql", "/"),
+  ("{-10}", "file.sql", ""),
+  ("{-10}/", "file.sql", ""),
+  ("/{-10}/", "file.sql", "/"),
+  ("{0}", "file.sql", "file"),
+  ("{1}", "file.sql", ".sql"),
+  ("{0}{1}", "file.sql", "file.sql"),
+  ("{0}/{1}", "file.sql", "file/.sql"),
+  ("{0..-2}.js", "file.sql", "file.js"),
+  ("{-2..-1}", "file.sql", "file.sql"),
+  ("{-2..-1}", "a/b/file.sql", "file.sql"),
+  ("{0..-2}.js", "a/b/file.sql", "a/b/file.js"),
+  ("{0..-3}/__test__/{-2}.test{-1}", "a/b/file.sql", "a/b/__test__/file.test.sql"),
+  ("{0..-3}_test/{-2..-1}", "a/b/file.sql", "a/b_test/file.sql"),
+  ("test_{0..-1}", "a/b/file.sql", "test_a/b/file.sql"),
+  ("test/{0..-1}", "a/b/file.sql", "test/a/b/file.sql"),
+  ("/test/{0..-1}", "a/b/file.sql", "/test/a/b/file.sql"),
+  ("/{0..-1}", "a/b/file.sql", "/a/b/file.sql"),
+  ("{0..-3}/{-2}.js", "file.sql", "file.js"),
+  ("{0..-4}/{-2}.js", "a/b/c/d/file.sql", "a/b/c/file.js"),
+]->each3("Transform %s + %s = %s", (pattern, path, result) => {
   let transform = pattern->make->Belt.Result.getExn
-  path->transform(~sep="/")->Belt.Result.getExn->expect->toMatchSnapshot
+  path->transform(~sep="/")->Belt.Result.getExn->expect->toBe(result)
 })
 
 test("Unconventional separator", () => {

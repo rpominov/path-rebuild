@@ -31,23 +31,125 @@ Jest.each([
       "test/{1{..2}/{-2}.js",
       "test/{1/..2}/{-2}.js",
       "test}/{1..2}/{-2}.js"
-    ], "Parse errors", (function (pattern) {
+    ], "Parse errors %s", (function (pattern) {
         expect(msg(PathRebuild.make(pattern))).toMatchSnapshot();
         
       }));
 
-Jest.each2([
+Jest.each3([
       [
-        "{0..-3}/{-2}.js",
+        "{10}",
+        "file.sql",
+        ""
+      ],
+      [
+        "{10}/",
+        "file.sql",
+        ""
+      ],
+      [
+        "/{10}/",
+        "file.sql",
+        "/"
+      ],
+      [
+        "{-10}",
+        "file.sql",
+        ""
+      ],
+      [
+        "{-10}/",
+        "file.sql",
+        ""
+      ],
+      [
+        "/{-10}/",
+        "file.sql",
+        "/"
+      ],
+      [
+        "{0}",
+        "file.sql",
+        "file"
+      ],
+      [
+        "{1}",
+        "file.sql",
+        ".sql"
+      ],
+      [
+        "{0}{1}",
+        "file.sql",
         "file.sql"
       ],
       [
+        "{0}/{1}",
+        "file.sql",
+        "file/.sql"
+      ],
+      [
+        "{0..-2}.js",
+        "file.sql",
+        "file.js"
+      ],
+      [
+        "{-2..-1}",
+        "file.sql",
+        "file.sql"
+      ],
+      [
+        "{-2..-1}",
+        "a/b/file.sql",
+        "file.sql"
+      ],
+      [
+        "{0..-2}.js",
+        "a/b/file.sql",
+        "a/b/file.js"
+      ],
+      [
+        "{0..-3}/__test__/{-2}.test{-1}",
+        "a/b/file.sql",
+        "a/b/__test__/file.test.sql"
+      ],
+      [
+        "{0..-3}_test/{-2..-1}",
+        "a/b/file.sql",
+        "a/b_test/file.sql"
+      ],
+      [
+        "test_{0..-1}",
+        "a/b/file.sql",
+        "test_a/b/file.sql"
+      ],
+      [
+        "test/{0..-1}",
+        "a/b/file.sql",
+        "test/a/b/file.sql"
+      ],
+      [
+        "/test/{0..-1}",
+        "a/b/file.sql",
+        "/test/a/b/file.sql"
+      ],
+      [
+        "/{0..-1}",
+        "a/b/file.sql",
+        "/a/b/file.sql"
+      ],
+      [
+        "{0..-3}/{-2}.js",
+        "file.sql",
+        "file.js"
+      ],
+      [
         "{0..-4}/{-2}.js",
-        "a/b/c/d/file.sql"
+        "a/b/c/d/file.sql",
+        "a/b/c/file.js"
       ]
-    ], "Transform", (function (pattern, path) {
+    ], "Transform %s + %s = %s", (function (pattern, path, result) {
         var transform = Belt_Result.getExn(PathRebuild.make(pattern));
-        expect(Belt_Result.getExn(Curry._2(transform, "/", path))).toMatchSnapshot();
+        expect(Belt_Result.getExn(Curry._2(transform, "/", path))).toBe(result);
         
       }));
 
