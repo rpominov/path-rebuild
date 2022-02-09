@@ -4,6 +4,8 @@
 var Path = require("path");
 var Js_exn = require("@rescript/std/lib/js/js_exn.js");
 var Caml_array = require("@rescript/std/lib/js/caml_array.js");
+var Caml_exceptions = require("@rescript/std/lib/js/caml_exceptions.js");
+var Caml_splice_call = require("@rescript/std/lib/js/caml_splice_call.js");
 
 function $$int(str) {
   var result = Number(str);
@@ -322,25 +324,35 @@ function parse(str) {
   };
 }
 
+var ParseError = /* @__PURE__ */Caml_exceptions.create("PathRebuild.ParseError");
+
+var PrintError = /* @__PURE__ */Caml_exceptions.create("PathRebuild.PrintError");
+
+function parseExn(str) {
+  var x = parse(str);
+  if (x.TAG === /* Ok */0) {
+    return x._0;
+  }
+  throw {
+        RE_EXN_ID: ParseError,
+        message: x._1,
+        index: x._0,
+        Error: new Error()
+      };
+}
+
 function printRange(parts, min, max, sep) {
-  var len = parts.length;
-  var min$1 = min < 0 ? len - min | 0 : min;
-  var max$1 = Math.min(len - 1 | 0, max < 0 ? len - max | 0 : max);
   var helper = function (st) {
-    var i = min$1 + st | 0;
-    if (i === max$1) {
+    var i = min + st | 0;
+    if (i === max) {
       return Caml_array.get(parts, i);
     } else {
       return Caml_array.get(parts, i) + (
-              st === (len - 2 | 0) ? "" : sep
+              st === (parts.length - 2 | 0) ? "" : sep
             ) + helper(st + 1 | 0);
     }
   };
-  if (max$1 < min$1) {
-    return "";
-  } else {
-    return helper(0);
-  }
+  return helper(0);
 }
 
 function print(sepOpt, nodes, path) {
@@ -354,9 +366,46 @@ function print(sepOpt, nodes, path) {
   var ext = Path.extname(path);
   var withoutExt = path.substring(0, path.length - ext.length | 0);
   var parts = withoutExt.split(sep).concat(ext);
+  var len = parts.length;
+  var norm = nodes.map(function (node) {
+        if (typeof node === "number") {
+          return node;
+        }
+        if (node.TAG !== /* Range */0) {
+          return node;
+        }
+        var max = node._1;
+        var min = node._0;
+        var min$1 = min < 0 ? len + min | 0 : min;
+        var max$1 = Math.min(len - 1 | 0, max < 0 ? len + max | 0 : max);
+        if (max$1 < min$1) {
+          return ;
+        } else {
+          return {
+                  TAG: /* Range */0,
+                  _0: min$1,
+                  _1: max$1
+                };
+        }
+      });
+  var __x = norm.map(function (node, i) {
+        if (node !== undefined) {
+          if (typeof node === "number") {
+            if (i > 0 && Caml_array.get(norm, i - 1 | 0) === undefined) {
+              return [];
+            } else {
+              return [/* Sep */0];
+            }
+          } else {
+            return [node];
+          }
+        } else {
+          return [];
+        }
+      });
   return {
           TAG: /* Ok */0,
-          _0: Path.normalize(nodes.map(function (node) {
+          _0: Path.normalize(Caml_splice_call.spliceObjApply([], "concat", [__x]).map(function (node) {
                       if (typeof node === "number") {
                         return sep;
                       } else if (node.TAG === /* Range */0) {
@@ -368,7 +417,23 @@ function print(sepOpt, nodes, path) {
         };
 }
 
+function printExn(sep, nodes, path) {
+  var x = print(sep, nodes, path);
+  if (x.TAG === /* Ok */0) {
+    return x._0;
+  }
+  throw {
+        RE_EXN_ID: PrintError,
+        message: x._0,
+        Error: new Error()
+      };
+}
+
 exports.parse = parse;
+exports.ParseError = ParseError;
+exports.PrintError = PrintError;
+exports.parseExn = parseExn;
 exports.printRange = printRange;
 exports.print = print;
+exports.printExn = printExn;
 /* path Not a pure module */

@@ -133,15 +133,23 @@ let rec parse = (str, i, mStatus, mResult: result<array<node>, string>): parseRe
 }
 let parse = str => parse(str, 0, Some(L("")), Ok([]))
 
+exception ParseError({message: string, index: int})
+exception PrintError({message: string})
+
+let parseExn = str =>
+  switch parse(str) {
+  | Ok(x) => x
+  | Error(i, m) => raise(ParseError({message: m, index: i}))
+  }
+
 let printRange = (parts, min, max, sep) => {
-  let len = parts->Js.Array2.length
-  let min = min < 0 ? len - min : min
-  let max = Js.Math.min_int(len - 1, max < 0 ? len - max : max)
   let rec helper = st => {
     let i = min + st
-    i === max ? parts[i] : parts[i] ++ (st === len - 2 ? "" : sep) ++ helper(st + 1)
+    i === max
+      ? parts[i]
+      : parts[i] ++ (st === parts->Js.Array2.length - 2 ? "" : sep) ++ helper(st + 1)
   }
-  max < min ? "" : helper(0)
+  helper(0)
 }
 
 let print = (~sep=osPathSep, nodes, path): result<string, string> => {
@@ -152,7 +160,28 @@ let print = (~sep=osPathSep, nodes, path): result<string, string> => {
     let withoutExt =
       path->Js.String2.substring(~from=0, ~to_=path->Js.String2.length - ext->Js.String2.length)
     let parts = withoutExt->Js.String2.split(sep)->append(ext)
-    nodes
+    let len = parts->Js.Array2.length
+
+    let norm = nodes->Js.Array2.map(node =>
+      switch node {
+      | Range(min, max) => {
+          let min = min < 0 ? len + min : min
+          let max = Js.Math.min_int(len - 1, max < 0 ? len + max : max)
+          max < min ? None : Range(min, max)->Some
+        }
+      | n => n->Some
+      }
+    )
+
+    norm
+    ->Js.Array2.mapi((node, i) =>
+      switch node {
+      | None => []
+      | Some(Sep) => i > 0 && norm[i - 1] === None ? [] : [Sep]
+      | Some(x) => [x]
+      }
+    )
+    ->Js.Array2.concatMany([], _)
     ->Js.Array2.map(node =>
       switch node {
       | Literal(s) => s
@@ -163,5 +192,12 @@ let print = (~sep=osPathSep, nodes, path): result<string, string> => {
     ->Js.Array2.joinWith("")
     ->normalize
     ->Ok
+  }
+}
+
+let printExn = (~sep=?, nodes, path) => {
+  switch print(~sep?, nodes, path) {
+  | Ok(x) => x
+  | Error(m) => raise(PrintError({message: m}))
   }
 }
