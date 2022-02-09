@@ -12,6 +12,7 @@ and defining a new path in terms of indices of the parts:
 
 ```
 
-For further documentation, go to [packages/path-rebuild](./packages/path-rebuild) or to
-[packages/rescript-path-rebuild](./packages/rescript-path-rebuild) 
-if you're a [ReScript](https://rescript-lang.org/) user.
+For further documentation, go to the package corresponding to your programming language:
+
+- [JavaScript](./packages/path-rebuild)
+- [ReScript](./packages/rescript-path-rebuild)
