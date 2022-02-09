@@ -55,7 +55,7 @@ let msg = err =>
 
 test("Unconventional separator", () => {
   let transform = "{0..-4}/{-2}.js"->make->Belt.Result.getExn
-  "a#b#c#d#file.sql"->transform(~sep="#")->Belt.Result.getExn->expect->toMatchSnapshot
+  "a#b#c#d#file.sql"->transform(~sep="#")->Belt.Result.getExn->expect->toBe("a#b#c#file.js")
 })
 
 test("Default separator", () => {

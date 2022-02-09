@@ -155,7 +155,7 @@ Jest.each3([
 
 test("Unconventional separator", (function () {
         var transform = Belt_Result.getExn(PathRebuild.make("{0..-4}/{-2}.js"));
-        expect(Belt_Result.getExn(Curry._2(transform, "#", "a#b#c#d#file.sql"))).toMatchSnapshot();
+        expect(Belt_Result.getExn(Curry._2(transform, "#", "a#b#c#d#file.sql"))).toBe("a#b#c#file.js");
         
       }));
 

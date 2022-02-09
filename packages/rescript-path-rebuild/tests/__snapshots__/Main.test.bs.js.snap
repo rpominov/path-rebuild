@@ -91,5 +91,3 @@ exports[`Parse errors test}/{1..2}/{-2}.js 1`] = `
     ^
 Unexpected } symbol"
 `;
-
-exports[`Unconventional separator 1`] = `"a#b#c#file.js"`;
