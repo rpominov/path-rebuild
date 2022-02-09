@@ -4,7 +4,6 @@
 var Path = require("path");
 var Js_exn = require("@rescript/std/lib/js/js_exn.js");
 var Caml_array = require("@rescript/std/lib/js/caml_array.js");
-var Caml_exceptions = require("@rescript/std/lib/js/caml_exceptions.js");
 var Caml_splice_call = require("@rescript/std/lib/js/caml_splice_call.js");
 
 function $$int(str) {
@@ -54,7 +53,9 @@ function commit(result, status) {
                   _0: "Bad range limit: " + n
                 };
         }
-    case /* R */3 :
+    case /* D */3 :
+        return Js_exn.raiseError("Cannot commit a Dot");
+    case /* R */4 :
         var m = status._1;
         var n$1 = status._0;
         var n$p$1 = $$int(n$1);
@@ -66,7 +67,7 @@ function commit(result, status) {
         }
         var m$p = $$int(m);
         if (m$p !== undefined) {
-          if (n$p$1 >= 0 ? m$p > 0 && m$p < n$p$1 : m$p >= 0 || n$p$1 < m$p) {
+          if (n$p$1 >= 0 ? m$p >= 0 && m$p < n$p$1 : m$p >= 0 || n$p$1 > m$p) {
             return {
                     TAG: /* Error */1,
                     _0: "Bad range limits: " + n$1 + ".." + m
@@ -91,6 +92,13 @@ function commit(result, status) {
   }
 }
 
+function printError(str, i, msg) {
+  return {
+          TAG: /* Error */1,
+          _0: str + "\n" + " ".repeat(i) + "^\n" + msg
+        };
+}
+
 function parse(str) {
   var _i = 0;
   var _mStatus = {
@@ -106,11 +114,7 @@ function parse(str) {
     var mStatus = _mStatus;
     var i = _i;
     if (mResult.TAG !== /* Ok */0) {
-      return {
-              TAG: /* Error */1,
-              _0: i - 1 | 0,
-              _1: mResult._0
-            };
+      return printError(str, i - 1 | 0, mResult._0);
     }
     var result = mResult._0;
     if (mStatus === undefined) {
@@ -124,6 +128,8 @@ function parse(str) {
     var exit = 0;
     var exit$1 = 0;
     var exit$2 = 0;
+    var exit$3 = 0;
+    var exit$4 = 0;
     switch (ch) {
       case "" :
           switch (mStatus.TAG | 0) {
@@ -133,19 +139,9 @@ function parse(str) {
                 _i = i$p;
                 continue ;
             case /* S */1 :
-                return {
-                        TAG: /* Error */1,
-                        _0: i,
-                        _1: "Unexpected end of string. Expected a character after \"\\\""
-                      };
-            case /* I */2 :
-            case /* R */3 :
-                return {
-                        TAG: /* Error */1,
-                        _0: i,
-                        _1: "Unexpected end of string. Did you forget to close a range?"
-                      };
-            
+                return printError(str, i, "Unexpected end of string. Expected a character after the escape symbol");
+            default:
+              return printError(str, i, "Unexpected end of string. Did you forget to close a range?");
           }
       case "." :
           switch (mStatus.TAG | 0) {
@@ -153,27 +149,25 @@ function parse(str) {
                 exit = 1;
                 break;
             case /* S */1 :
-                exit$2 = 4;
+                exit$4 = 6;
                 break;
             case /* I */2 :
                 _mStatus = {
-                  TAG: /* R */3,
+                  TAG: /* D */3,
+                  _0: mStatus._0
+                };
+                _i = i$p;
+                continue ;
+            case /* D */3 :
+                _mStatus = {
+                  TAG: /* R */4,
                   _0: mStatus._0,
                   _1: ""
                 };
                 _i = i$p;
                 continue ;
-            case /* R */3 :
-                if (mStatus._1 !== "") {
-                  return {
-                          TAG: /* Error */1,
-                          _0: i,
-                          _1: "Unexpected range delimeter character"
-                        };
-                }
-                _mStatus = mStatus;
-                _i = i$p;
-                continue ;
+            case /* R */4 :
+                return printError(str, i, "Unexpected . symbol");
             
           }
           break;
@@ -188,29 +182,34 @@ function parse(str) {
                 _i = i$p;
                 continue ;
             case /* S */1 :
+                exit$4 = 6;
+                break;
+            case /* D */3 :
                 exit$2 = 4;
                 break;
             case /* I */2 :
-            case /* R */3 :
+            case /* R */4 :
                 exit$1 = 3;
                 break;
             
           }
           break;
       case "\\" :
-          if (mStatus.TAG !== /* L */0) {
-            return {
-                    TAG: /* Error */1,
-                    _0: i,
-                    _1: "Unexpected escape character"
-                  };
+          switch (mStatus.TAG | 0) {
+            case /* L */0 :
+                _mStatus = {
+                  TAG: /* S */1,
+                  _0: mStatus._0
+                };
+                _i = i$p;
+                continue ;
+            case /* S */1 :
+                exit$4 = 6;
+                break;
+            default:
+              exit$3 = 5;
           }
-          _mStatus = {
-            TAG: /* S */1,
-            _0: mStatus._0
-          };
-          _i = i$p;
-          continue ;
+          break;
       case "{" :
           switch (mStatus.TAG | 0) {
             case /* L */0 :
@@ -222,34 +221,32 @@ function parse(str) {
                 _i = i$p;
                 continue ;
             case /* S */1 :
-                exit$2 = 4;
+                exit$4 = 6;
                 break;
-            case /* I */2 :
-            case /* R */3 :
-                exit$1 = 3;
-                break;
-            
+            default:
+              exit$3 = 5;
           }
           break;
       case "}" :
           switch (mStatus.TAG | 0) {
-            case /* L */0 :
-                exit$1 = 3;
-                break;
             case /* S */1 :
-                exit$2 = 4;
+                exit$4 = 6;
+                break;
+            case /* L */0 :
+            case /* D */3 :
+                exit$3 = 5;
                 break;
             case /* I */2 :
-            case /* R */3 :
+            case /* R */4 :
                 exit = 2;
                 break;
             
           }
           break;
       default:
-        exit$2 = 4;
+        exit$4 = 6;
     }
-    if (exit$2 === 4) {
+    if (exit$4 === 6) {
       if (mStatus.TAG === /* S */1) {
         _mStatus = {
           TAG: /* L */0,
@@ -258,31 +255,31 @@ function parse(str) {
         _i = i$p;
         continue ;
       }
+      exit$3 = 5;
+    }
+    if (exit$3 === 5) {
+      switch (ch) {
+        case "\\" :
+            return printError(str, i, "Unexpected escape symbol inside a range");
+        case "{" :
+            return printError(str, i, "Unexpected { symbol inside a range");
+        case "}" :
+            return printError(str, i, "Unexpected } symbol");
+        default:
+          exit$2 = 4;
+      }
+    }
+    if (exit$2 === 4) {
+      if (mStatus.TAG === /* D */3) {
+        return printError(str, i, "Unexpected character: " + ch + ". Was expecting a . symbol");
+      }
       exit$1 = 3;
     }
     if (exit$1 === 3) {
-      switch (ch) {
-        case "/" :
-            return {
-                    TAG: /* Error */1,
-                    _0: i,
-                    _1: "Unexpected path separator character"
-                  };
-        case "{" :
-            return {
-                    TAG: /* Error */1,
-                    _0: i,
-                    _1: "Unexpected open range character"
-                  };
-        case "}" :
-            return {
-                    TAG: /* Error */1,
-                    _0: i,
-                    _1: "Unexpected close range character"
-                  };
-        default:
-          exit = 1;
+      if (ch === "/") {
+        return printError(str, i, "Unexpected / symbol inside a range");
       }
+      exit = 1;
     }
     switch (exit) {
       case 1 :
@@ -301,9 +298,9 @@ function parse(str) {
                 };
                 _i = i$p;
                 continue ;
-            case /* R */3 :
+            case /* R */4 :
                 _mStatus = {
-                  TAG: /* R */3,
+                  TAG: /* R */4,
                   _0: mStatus._0,
                   _1: mStatus._1 + ch
                 };
@@ -324,116 +321,96 @@ function parse(str) {
   };
 }
 
-var ParseError = /* @__PURE__ */Caml_exceptions.create("PathRebuild.ParseError");
-
-var PrintError = /* @__PURE__ */Caml_exceptions.create("PathRebuild.PrintError");
-
-function parseExn(str) {
-  var x = parse(str);
-  if (x.TAG === /* Ok */0) {
-    return x._0;
-  }
-  throw {
-        RE_EXN_ID: ParseError,
-        message: x._1,
-        index: x._0,
-        Error: new Error()
-      };
-}
-
-function printRange(parts, min, max, sep) {
-  var helper = function (st) {
-    var i = min + st | 0;
-    if (i === max) {
-      return Caml_array.get(parts, i);
-    } else {
-      return Caml_array.get(parts, i) + (
-              st === (parts.length - 2 | 0) ? "" : sep
-            ) + helper(st + 1 | 0);
-    }
-  };
-  return helper(0);
-}
-
-function print(sepOpt, nodes, path) {
-  var sep = sepOpt !== undefined ? sepOpt : Path.sep;
-  if (Path.isAbsolute(path)) {
+function make(str) {
+  var nodes = parse(str);
+  if (nodes.TAG !== /* Ok */0) {
     return {
             TAG: /* Error */1,
-            _0: "An absolute path cannot be used as a source path"
+            _0: nodes._0
           };
   }
-  var ext = Path.extname(path);
-  var withoutExt = path.substring(0, path.length - ext.length | 0);
-  var parts = withoutExt.split(sep).concat(ext);
-  var len = parts.length;
-  var norm = nodes.map(function (node) {
-        if (typeof node === "number") {
-          return node;
-        }
-        if (node.TAG !== /* Range */0) {
-          return node;
-        }
-        var max = node._1;
-        var min = node._0;
-        var min$1 = min < 0 ? len + min | 0 : min;
-        var max$1 = Math.min(len - 1 | 0, max < 0 ? len + max | 0 : max);
-        if (max$1 < min$1) {
-          return ;
-        } else {
-          return {
-                  TAG: /* Range */0,
-                  _0: min$1,
-                  _1: max$1
-                };
-        }
-      });
-  var __x = norm.map(function (node, i) {
-        if (node !== undefined) {
-          if (typeof node === "number") {
-            if (i > 0 && Caml_array.get(norm, i - 1 | 0) === undefined) {
-              return [];
-            } else {
-              return [/* Sep */0];
-            }
-          } else {
-            return [node];
-          }
-        } else {
-          return [];
-        }
-      });
+  var nodes$1 = nodes._0;
   return {
           TAG: /* Ok */0,
-          _0: Path.normalize(Caml_splice_call.spliceObjApply([], "concat", [__x]).map(function (node) {
+          _0: (function (sep, path) {
+              var sep$1 = sep !== undefined ? sep : Path.sep;
+              if (Path.isAbsolute(path)) {
+                return {
+                        TAG: /* Error */1,
+                        _0: "An absolute path cannot be used as a source path"
+                      };
+              }
+              var ext = Path.extname(path);
+              var withoutExt = path.substring(0, path.length - ext.length | 0);
+              var parts = withoutExt.split(sep$1).concat(ext);
+              var len = parts.length;
+              var norm = nodes$1.map(function (node) {
+                    if (typeof node === "number") {
+                      return node;
+                    }
+                    if (node.TAG !== /* Range */0) {
+                      return node;
+                    }
+                    var max = node._1;
+                    var min = node._0;
+                    var min$1 = min < 0 ? len + min | 0 : min;
+                    var max$1 = Math.min(len - 1 | 0, max < 0 ? len + max | 0 : max);
+                    if (max$1 < min$1) {
+                      return ;
+                    } else {
+                      return {
+                              TAG: /* Range */0,
+                              _0: min$1,
+                              _1: max$1
+                            };
+                    }
+                  });
+              var __x = norm.map(function (node, i) {
+                    if (node !== undefined) {
                       if (typeof node === "number") {
-                        return sep;
-                      } else if (node.TAG === /* Range */0) {
-                        return printRange(parts, node._0, node._1, sep);
+                        if (i > 0 && Caml_array.get(norm, i - 1 | 0) === undefined) {
+                          return [];
+                        } else {
+                          return [/* Sep */0];
+                        }
                       } else {
-                        return node._0;
+                        return [node];
                       }
-                    }).join(""))
+                    } else {
+                      return [];
+                    }
+                  });
+              var arr = Caml_splice_call.spliceObjApply([], "concat", [__x]).map(function (node) {
+                    if (typeof node === "number") {
+                      return sep$1;
+                    } else if (node.TAG === /* Range */0) {
+                      var min = node._0;
+                      var max = node._1;
+                      var helper = function (st) {
+                        var i = min + st | 0;
+                        if (i === max) {
+                          return Caml_array.get(parts, i);
+                        } else {
+                          return Caml_array.get(parts, i) + (
+                                  st === (parts.length - 2 | 0) ? "" : sep$1
+                                ) + helper(st + 1 | 0);
+                        }
+                      };
+                      var r = helper(0);
+                      console.log(parts, min, max, r);
+                      return r;
+                    } else {
+                      return node._0;
+                    }
+                  });
+              console.log(arr);
+              return {
+                      TAG: /* Ok */0,
+                      _0: arr.join("")
+                    };
+            })
         };
 }
 
-function printExn(sep, nodes, path) {
-  var x = print(sep, nodes, path);
-  if (x.TAG === /* Ok */0) {
-    return x._0;
-  }
-  throw {
-        RE_EXN_ID: PrintError,
-        message: x._0,
-        Error: new Error()
-      };
-}
-
-exports.parse = parse;
-exports.ParseError = ParseError;
-exports.PrintError = PrintError;
-exports.parseExn = parseExn;
-exports.printRange = printRange;
-exports.print = print;
-exports.printExn = printExn;
+exports.make = make;
 /* path Not a pure module */
