@@ -1,0 +1,26 @@
+{
+  "name": "path-rebuild",
+  "version": "0.1.0",
+  "description": "Transform a file path by splitting the original path into an array of parts and defining a new path in terms of indices of the parts",
+  "main": "./index.js",
+  "scripts": {},
+  "keywords": [
+    "path",
+    "transform",
+    "rebuild"
+  ],
+  "contributors": [
+    "Roman Pominov"
+  ],
+  "homepage": "https://github.com/path-rebuild/packages/path-rebuild#readme",
+  "bugs": "https://github.com/path-rebuild/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rpominov/path-rebuild.git",
+    "directory": "packages/path-rebuild"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "rescript-path-rebuild": "^0.1.0"
+  }
+}

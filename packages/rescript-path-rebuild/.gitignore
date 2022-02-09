@@ -1,0 +1,5 @@
+/lib/
+.bsb.lock
+.merlin
+.DS_Store
+/node_modules/

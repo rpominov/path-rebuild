@@ -1,0 +1,42 @@
+{
+  "name": "rescript-path-rebuild",
+  "version": "0.1.0",
+  "description": "Transform a file path by splitting the original path into an array of parts and defining a new path in terms of indices of the parts",
+  "main": "./PathRebuild.bs.js",
+  "scripts": {
+    "build": "rescript",
+    "clean": "rescript clean -with-deps",
+    "start": "rescript build -w",
+    "test": "jest",
+    "snap": "jest --updateSnapshot"
+  },
+  "keywords": [
+    "rescript",
+    "path",
+    "transform",
+    "rebuild"
+  ],
+  "contributors": [
+    "Roman Pominov"
+  ],
+  "homepage": "https://github.com/path-rebuild/packages/rescript-path-rebuild#readme",
+  "bugs": "https://github.com/path-rebuild/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rpominov/path-rebuild.git",
+    "directory": "packages/rescript-path-rebuild"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@rescript/std": "^9.1.3"
+  },
+  "devDependencies": {
+    "jest": "^27.5.1",
+    "rescript": "^9.1.4"
+  },
+  "jest": {
+    "testMatch": [
+      "**/*.test.bs.js"
+    ]
+  }
+}
