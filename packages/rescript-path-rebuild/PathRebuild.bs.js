@@ -3,8 +3,6 @@
 
 var Path = require("path");
 var Js_exn = require("@rescript/std/lib/js/js_exn.js");
-var Caml_array = require("@rescript/std/lib/js/caml_array.js");
-var Caml_splice_call = require("@rescript/std/lib/js/caml_splice_call.js");
 
 function $$int(str) {
   var result = Number(str);
@@ -330,6 +328,16 @@ function parse(str) {
   };
 }
 
+function printRange(parts, min, max, sep) {
+  if (min === max) {
+    return parts[min];
+  } else if (max === (parts.length - 1 | 0)) {
+    return printRange(parts, min, max - 1 | 0, sep) + parts[max];
+  } else {
+    return parts.slice(min, max + 1 | 0).join(sep);
+  }
+}
+
 function make(str) {
   var nodes = parse(str);
   if (nodes.TAG !== /* Ok */0) {
@@ -374,44 +382,25 @@ function make(str) {
                             };
                     }
                   });
-              var __x = norm.map(function (node, i) {
-                    if (node !== undefined) {
-                      if (typeof node === "number") {
-                        if (i > 0 && Caml_array.get(norm, i - 1 | 0) === undefined) {
-                          return [];
-                        } else {
-                          return [/* Sep */0];
-                        }
-                      } else {
-                        return [node];
-                      }
-                    } else {
-                      return [];
-                    }
-                  });
               return {
                       TAG: /* Ok */0,
-                      _0: Caml_splice_call.spliceObjApply([], "concat", [__x]).map(function (node) {
-                              if (typeof node === "number") {
-                                return sep$1;
-                              } else if (node.TAG === /* Range */0) {
-                                var min = node._0;
-                                var max = node._1;
-                                var helper = function (st) {
-                                  var i = min + st | 0;
-                                  if (i === max) {
-                                    return Caml_array.get(parts, i);
+                      _0: norm.map(function (node, i) {
+                                if (node !== undefined) {
+                                  if (typeof node === "number") {
+                                    if (i > 0 && norm[i - 1 | 0] === undefined) {
+                                      return [];
+                                    } else {
+                                      return [sep$1];
+                                    }
+                                  } else if (node.TAG === /* Range */0) {
+                                    return [printRange(parts, node._0, node._1, sep$1)];
                                   } else {
-                                    return Caml_array.get(parts, i) + (
-                                            i === (parts.length - 2 | 0) ? "" : sep$1
-                                          ) + helper(st + 1 | 0);
+                                    return [node._0];
                                   }
-                                };
-                                return helper(0);
-                              } else {
-                                return node._0;
-                              }
-                            }).join("")
+                                } else {
+                                  return [];
+                                }
+                              }).flat().join("")
                     };
             })
         };

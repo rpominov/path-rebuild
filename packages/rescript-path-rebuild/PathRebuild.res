@@ -13,6 +13,7 @@ let int = str => {
 }
 
 @send external append: (array<'a>, 'a) => array<'a> = "concat"
+@send external flat: array<array<'a>> => array<'a> = "flat"
 @send external repeat: (string, int) => string = "repeat"
 
 let commit = (result, status) => {
@@ -104,14 +105,14 @@ let rec parse = (str, i, mStatus, mResult: result<array<node>, string>) => {
 }
 let parse = str => parse(str, 0, Some(L("")), Ok([]))
 
-let printRange = (parts, min, max, sep) => {
-  let rec helper = st => {
-    let i = min + st
-    i === max
-      ? parts[i]
-      : parts[i] ++ (i === parts->Js.Array2.length - 2 ? "" : sep) ++ helper(st + 1)
+let rec printRange = (parts, min, max, sep) => {
+  if min === max {
+    parts->Js.Array2.unsafe_get(min)
+  } else if max === parts->Js.Array2.length - 1 {
+    printRange(parts, min, max - 1, sep) ++ parts->Js.Array2.unsafe_get(max)
+  } else {
+    parts->Js.Array2.slice(~start=min, ~end_=max + 1)->Js.Array2.joinWith(sep)
   }
-  helper(0)
 }
 
 let print = (~sep=osPathSep, nodes, path): result<string, string> => {
@@ -139,18 +140,12 @@ let print = (~sep=osPathSep, nodes, path): result<string, string> => {
     ->Js.Array2.mapi((node, i) =>
       switch node {
       | None => []
-      | Some(Sep) => i > 0 && norm[i - 1] === None ? [] : [Sep]
-      | Some(x) => [x]
+      | Some(Sep) => i > 0 && norm->Js.Array2.unsafe_get(i - 1) === None ? [] : [sep]
+      | Some(Literal(s)) => [s]
+      | Some(Range(min, max)) => [printRange(parts, min, max, sep)]
       }
     )
-    ->Js.Array2.concatMany([], _)
-    ->Js.Array2.map(node =>
-      switch node {
-      | Literal(s) => s
-      | Sep => sep
-      | Range(min, max) => printRange(parts, min, max, sep)
-      }
-    )
+    ->flat
     ->Js.Array2.joinWith("")
     ->Ok
   }
