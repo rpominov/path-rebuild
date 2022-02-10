@@ -42,7 +42,7 @@ If the source path has no extension, `{-1}` will correspond to `""`.
 
 - `{0..-1}`: no modifications (`foo/baz.js -> foo/baz.js`)
 - `{0..-2}.json`: change the extension to `.json` (`foo/baz.js -> foo/baz.json`)
-- `root/{0..-2}`: move the entire path to a different root (`foo/baz.js -> root/foo/baz.js`)
+- `root/{0..-1}`: move the entire path to a different root (`foo/baz.js -> root/foo/baz.js`)
 - `{0..-3}/prefix_{-2..-1}`: add a prefix to the file name (`foo/baz.js -> foo/prefix_baz.js`)
 - `{0..-3}/{-2}_postfix{-1}`: add a postfix to the file name (`foo/baz.js -> foo/baz_postfix.js`)
 - `{0..-3}/sub/{-2..-1}`: add a sub directory (`foo/baz.js -> foo/sub/baz.js`)
