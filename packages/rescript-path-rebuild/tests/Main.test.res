@@ -1,6 +1,8 @@
 open Jest
 open PathRebuild
 
+@module("process") @val external platform: string = "platform"
+
 let msg = err =>
   switch err {
   | Error(msg) => msg
@@ -68,18 +70,16 @@ test("Unconventional separator", () => {
 
 test("Default separator", () => {
   let transform = "{0..-4}/{-2}.js"->make->Belt.Result.getExn
-
-  // NOTE: will fail on Windows
-  // TODO: use different path depending on platform
-  "a/b/c/d/file.sql"->transform->Belt.Result.getExn->expect->toEqual("a/b/c/file.js")
+  if platform === "win32" {
+    "a\\b\\c\\d\\file.sql"->transform->Belt.Result.getExn->expect->toEqual("a\\b\\c\\file.js")
+  } else {
+    "a/b/c/d/file.sql"->transform->Belt.Result.getExn->expect->toEqual("a/b/c/file.js")
+  }
 })
 
 test("Absolute path", () => {
   let transform = "{0..-3}/{-2}.js"->make->Belt.Result.getExn
-
-  // NOTE: will fail on Windows
-  // TODO: use different path depending on platform
-  "/file.sql"->transform->msg->expect->toMatchSnapshot
+  (platform === "win32" ? "C:\\file.sql" : "/file.sql")->transform->msg->expect->toMatchSnapshot
 })
 
 test("transformExn parse error", () => {

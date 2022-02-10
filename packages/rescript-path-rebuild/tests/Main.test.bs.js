@@ -4,6 +4,7 @@
 var Jest = require("./Jest.bs.js");
 var Curry = require("rescript/lib/js/curry.js");
 var Js_exn = require("rescript/lib/js/js_exn.js");
+var Process = require("process");
 var Belt_Result = require("rescript/lib/js/belt_Result.js");
 var PathRebuild = require("../PathRebuild.bs.js");
 var Caml_js_exceptions = require("rescript/lib/js/caml_js_exceptions.js");
@@ -202,13 +203,17 @@ test("Unconventional separator", (function () {
 
 test("Default separator", (function () {
         var transform = Belt_Result.getExn(PathRebuild.make("{0..-4}/{-2}.js"));
-        expect(Belt_Result.getExn(Curry._2(transform, undefined, "a/b/c/d/file.sql"))).toEqual("a/b/c/file.js");
+        if (Process.platform === "win32") {
+          expect(Belt_Result.getExn(Curry._2(transform, undefined, "a\\b\\c\\d\\file.sql"))).toEqual("a\\b\\c\\file.js");
+        } else {
+          expect(Belt_Result.getExn(Curry._2(transform, undefined, "a/b/c/d/file.sql"))).toEqual("a/b/c/file.js");
+        }
         
       }));
 
 test("Absolute path", (function () {
         var transform = Belt_Result.getExn(PathRebuild.make("{0..-3}/{-2}.js"));
-        expect(msg(Curry._2(transform, undefined, "/file.sql"))).toMatchSnapshot();
+        expect(msg(Curry._2(transform, undefined, Process.platform === "win32" ? "C:\\file.sql" : "/file.sql"))).toMatchSnapshot();
         
       }));
 
