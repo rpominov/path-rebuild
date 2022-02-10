@@ -48,7 +48,7 @@ transformExn("new_root/{0}_new/{1..-3}/{-2}.json", "some/path/to/a/file.js")->Js
 
 ### `make: string => result<(~sep: string=?, string) => result<string, string>, string>`
 
-Turns a pattern in to a transform function. Returns a `result` because parsing the pattern may produce a error.
+Turns a pattern into a transform function. Returns a `result` because parsing the pattern may produce a error.
 
 The transform function takes a source path and returns a path transformed according to the pattern. It also returns a `result` that will be a `Error` if the source path is unsupported (currently the only such canse is an absolute paths that the library doesn't support).
 
@@ -64,7 +64,7 @@ For the `pattern` syntax documentation go [here](https://github.com/rpominov/pat
 Same as `make`, but instead of returning a result both functions throw exceptions (`Js.Exn.Error`).
 
 Since we ended up with a function that returns a function,
-it's merged into a single function due to first class currying support.
-But you still can take advantage of pattern parse caching,
+it's merged into a single function due to first class support of currying.
+But you still can take advantage of the caching of the pattern parsing result,
 if you call `transformExn` with one argument,
 and then use the remaining curried function multiple times.

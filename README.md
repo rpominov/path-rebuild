@@ -23,6 +23,7 @@ and defining a new path in terms of indices of the parts:
 
 Where `n` and `m` can be negative numbers, indicating an offset from the end of the parts sequence.
 `-1` corresponds to the last item.
+
 A range like `{n}` or `{n..m}` can collapse if there’re no parts corresponding to the parameters.
 For example, with the source path `foo/bar.ext`, `{3}` will collapse
 since it refers to the 4’th item while there’re only 3. Same with `{-5..-4}`.
@@ -35,7 +36,7 @@ When a range like `{n..m}` is interpreted, a platform dependent separator is ins
 Except the last part! The last part corresponds to the file extension,
 as defined by [path.extname(path)](https://nodejs.org/api/path.html#pathextnamepath).
 When the last part is a part of a range, nothing is inserted between it and the previous part.
-If the source path has no extension `{-1}` will correspond to `""`.
+If the source path has no extension, `{-1}` will correspond to `""`.
 
 ---
 
