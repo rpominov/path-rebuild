@@ -31,13 +31,13 @@ console.log(transfrom("some/path/to/a/file.js"));
 
 ## API
 
-# `createTransform(pattern: string): (sourcePath: string, [separator: string]) => string`
+### `createTransform(pattern: string): (sourcePath: string, [separator: string]) => string`
 
 Creates a transform function.
 The transform function takes a `sourcePath` and returns a path transformed according to the `pattern`.
 You can also pass a custom separator.
 It will be used to split the `sourcePath` into parts,
-and will be inserted in palce of `/` in the pattern.
+and will be inserted in place of `/` in the pattern.
 By default [path.sep](https://nodejs.org/api/path.html#pathsep) is used.
 
-For the `pattern` syntax documentation go [here](https://github.com/rpominov/path-rebuild).
+For the `pattern` syntax documentation go [here](https://github.com/rpominov/path-rebuild#pattern-syntax).
