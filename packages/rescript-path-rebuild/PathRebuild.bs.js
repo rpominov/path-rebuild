@@ -354,46 +354,47 @@ function print(sepOpt, nodes, path) {
   var withoutExt = path.substring(0, path.length - ext.length | 0);
   var parts = withoutExt.split(sep).concat(ext);
   var len = parts.length;
-  var norm = nodes.map(function (node) {
-        if (typeof node === "number") {
-          return node;
-        }
-        if (node.TAG !== /* Range */0) {
-          return node;
-        }
-        var max = node._1;
-        var min = node._0;
+  var helper = function (_result, _i, _skipSeparator) {
+    while(true) {
+      var skipSeparator = _skipSeparator;
+      var i = _i;
+      var result = _result;
+      if (i === nodes.length) {
+        return result;
+      }
+      var s = nodes[i];
+      if (typeof s === "number") {
+        _skipSeparator = false;
+        _i = i + 1 | 0;
+        _result = result + (
+          skipSeparator ? "" : sep
+        );
+        continue ;
+      }
+      if (s.TAG === /* Range */0) {
+        var max = s._1;
+        var min = s._0;
         var min$1 = Math.max(0, min < 0 ? len + min | 0 : min);
         var max$1 = Math.min(len - 1 | 0, max < 0 ? len + max | 0 : max);
         if (max$1 < min$1) {
-          return ;
-        } else {
-          return {
-                  TAG: /* Range */0,
-                  _0: min$1,
-                  _1: max$1
-                };
+          _skipSeparator = true;
+          _i = i + 1 | 0;
+          continue ;
         }
-      });
+        _skipSeparator = false;
+        _i = i + 1 | 0;
+        _result = result + printRange(parts, min$1, max$1, sep);
+        continue ;
+      }
+      _skipSeparator = false;
+      _i = i + 1 | 0;
+      _result = result + s._0;
+      continue ;
+    };
+  };
   return {
           TAG: /* Ok */0,
-          _0: norm.map(function (node, i) {
-                    if (node !== undefined) {
-                      if (typeof node === "number") {
-                        if (i > 0 && norm[i - 1 | 0] === undefined) {
-                          return [];
-                        } else {
-                          return [sep];
-                        }
-                      } else if (node.TAG === /* Range */0) {
-                        return [printRange(parts, node._0, node._1, sep)];
-                      } else {
-                        return [node._0];
-                      }
-                    } else {
-                      return [];
-                    }
-                  }).flat().join("")
+          _0: helper("", 0, false)
         };
 }
 

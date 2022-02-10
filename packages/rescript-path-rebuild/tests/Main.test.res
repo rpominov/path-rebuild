@@ -28,6 +28,7 @@ let msg = err =>
 ]->each("Parse errors %s", pattern => pattern->make->msg->expect->toMatchSnapshot)
 
 [
+  ("", "file.sql", ""),
   ("{10}", "file.sql", ""),
   ("{10}/", "file.sql", ""),
   ("/{10}/", "file.sql", "/"),

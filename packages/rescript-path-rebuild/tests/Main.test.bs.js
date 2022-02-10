@@ -40,6 +40,11 @@ Jest.each([
 
 Jest.each3([
       [
+        "",
+        "file.sql",
+        ""
+      ],
+      [
         "{10}",
         "file.sql",
         ""

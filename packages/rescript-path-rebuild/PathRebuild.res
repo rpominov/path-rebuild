@@ -1,3 +1,9 @@
+module A = Js.Array2
+module S = Js.String2
+module I = Belt.Int
+module E = Js.Exn
+module M = Js.Math
+
 type node = Sep | Range(int, int) | Literal(string)
 type status = L(string) | S(string) | I(string) | D(string) | R(string, string)
 
@@ -8,12 +14,11 @@ type status = L(string) | S(string) | I(string) | D(string) | R(string, string)
 @val external int: string => float = "Number"
 let int = str => {
   let result = int(str)
-  let result' = result->Belt.Int.fromFloat
-  result === result'->Belt.Int.toFloat ? Some(result') : None
+  let result' = result->I.fromFloat
+  result === result'->I.toFloat ? Some(result') : None
 }
 
 @send external append: (array<'a>, 'a) => array<'a> = "concat"
-@send external flat: array<array<'a>> => array<'a> = "flat"
 @send external repeat: (string, int) => string = "repeat"
 
 let commit = (result, status) => {
@@ -45,8 +50,8 @@ let commit = (result, status) => {
       }
     | None => Error(`Bad range limit: ${n}`)
     }
-  | S(_) => Js.Exn.raiseError("Cannot commit a Skip")
-  | D(_) => Js.Exn.raiseError("Cannot commit a Dot")
+  | S(_) => E.raiseError("Cannot commit a Skip")
+  | D(_) => E.raiseError("Cannot commit a Dot")
   }
 }
 
@@ -59,7 +64,7 @@ let rec parse = (str, i, mStatus, mResult: result<array<node>, string>) => {
     switch mStatus {
     | None => Ok(result)
     | Some(status) => {
-        let ch = str->Js.String2.charAt(i)
+        let ch = str->S.charAt(i)
         let i' = i + 1
         switch (ch, status) {
         | ("", L(_)) => parse(str, i', None, result->commit(status))
@@ -108,11 +113,11 @@ let parse = str => parse(str, 0, Some(L("")), Ok([]))
 
 let rec printRange = (parts, min, max, sep) => {
   if min === max {
-    parts->Js.Array2.unsafe_get(min)
-  } else if max === parts->Js.Array2.length - 1 {
-    printRange(parts, min, max - 1, sep) ++ parts->Js.Array2.unsafe_get(max)
+    parts->A.unsafe_get(min)
+  } else if max === parts->A.length - 1 {
+    printRange(parts, min, max - 1, sep) ++ parts->A.unsafe_get(max)
   } else {
-    parts->Js.Array2.slice(~start=min, ~end_=max + 1)->Js.Array2.joinWith(sep)
+    parts->A.slice(~start=min, ~end_=max + 1)->A.joinWith(sep)
   }
 }
 
@@ -121,34 +126,29 @@ let print = (~sep=osPathSep, nodes, path): result<string, string> => {
     Error(`An absolute path cannot be used as a source path:\n${path}`)
   } else {
     let ext = path->extname
-    let withoutExt =
-      path->Js.String2.substring(~from=0, ~to_=path->Js.String2.length - ext->Js.String2.length)
-    let parts = withoutExt->Js.String2.split(sep)->append(ext)
-    let len = parts->Js.Array2.length
+    let withoutExt = path->S.substring(~from=0, ~to_=path->S.length - ext->S.length)
+    let parts = withoutExt->S.split(sep)->append(ext)
+    let len = parts->A.length
 
-    let norm = nodes->Js.Array2.map(node =>
-      switch node {
-      | Range(min, max) => {
-          let min = Js.Math.max_int(0, min < 0 ? len + min : min)
-          let max = Js.Math.min_int(len - 1, max < 0 ? len + max : max)
-          max < min ? None : Range(min, max)->Some
+    let rec helper = (result, i, skipSeparator) => {
+      if i === nodes->A.length {
+        result
+      } else {
+        switch nodes->A.unsafe_get(i) {
+        | Literal(s) => helper(result ++ s, i + 1, false)
+        | Sep => helper(result ++ (skipSeparator ? "" : sep), i + 1, false)
+        | Range(min, max) => {
+            let min = M.max_int(0, min < 0 ? len + min : min)
+            let max = M.min_int(len - 1, max < 0 ? len + max : max)
+            max < min
+              ? helper(result, i + 1, true)
+              : helper(result ++ printRange(parts, min, max, sep), i + 1, false)
+          }
         }
-      | n => n->Some
       }
-    )
+    }
 
-    norm
-    ->Js.Array2.mapi((node, i) =>
-      switch node {
-      | None => []
-      | Some(Sep) => i > 0 && norm->Js.Array2.unsafe_get(i - 1) === None ? [] : [sep]
-      | Some(Literal(s)) => [s]
-      | Some(Range(min, max)) => [printRange(parts, min, max, sep)]
-      }
-    )
-    ->flat
-    ->Js.Array2.joinWith("")
-    ->Ok
+    helper("", 0, false)->Ok
   }
 }
 
@@ -164,7 +164,7 @@ let transformExn = pattern =>
     (~sep=?, path) =>
       switch print(~sep?, nodes, path) {
       | Ok(result) => result
-      | Error(message) => Js.Exn.raiseError(message)
+      | Error(message) => E.raiseError(message)
       }
-  | Error(message) => Js.Exn.raiseError(message)
+  | Error(message) => E.raiseError(message)
   }
