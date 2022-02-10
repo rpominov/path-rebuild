@@ -2,11 +2,11 @@
 'use strict';
 
 var Jest = require("./Jest.bs.js");
-var Curry = require("@rescript/std/lib/js/curry.js");
-var Js_exn = require("@rescript/std/lib/js/js_exn.js");
-var Belt_Result = require("@rescript/std/lib/js/belt_Result.js");
+var Curry = require("rescript/lib/js/curry.js");
+var Js_exn = require("rescript/lib/js/js_exn.js");
+var Belt_Result = require("rescript/lib/js/belt_Result.js");
 var PathRebuild = require("../PathRebuild.bs.js");
-var Caml_js_exceptions = require("@rescript/std/lib/js/caml_js_exceptions.js");
+var Caml_js_exceptions = require("rescript/lib/js/caml_js_exceptions.js");
 
 function msg(err) {
   if (err.TAG === /* Ok */0) {

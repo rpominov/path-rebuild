@@ -2,7 +2,7 @@
 'use strict';
 
 var Path = require("path");
-var Js_exn = require("@rescript/std/lib/js/js_exn.js");
+var Js_exn = require("rescript/lib/js/js_exn.js");
 
 function $$int(str) {
   var result = Number(str);

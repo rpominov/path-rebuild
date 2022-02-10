@@ -1,10 +1,11 @@
 {
   "name": "path-rebuild",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Transform a file path by splitting the original path into an array of parts and defining a new path in terms of indices of the parts",
   "main": "./index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "rollup --config rollup.config.js"
   },
   "keywords": [
     "path",
@@ -22,8 +23,8 @@
     "directory": "packages/path-rebuild"
   },
   "license": "MIT",
-  "dependencies": {
-    "rescript-path-rebuild": "^0.1.0"
+  "devDependencies": {
+    "rescript-path-rebuild": "^0.1.1"
   },
   "jest": {
     "testMatch": [
