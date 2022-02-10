@@ -38,6 +38,15 @@ as defined by [path.extname(path)](https://nodejs.org/api/path.html#pathextnamep
 When the last part is a part of a range, nothing is inserted between it and the previous part.
 If the source path has no extension, `{-1}` will correspond to `""`.
 
+### Examples
+
+- `{0..-1}`: no modifications (`foo/baz.js -> foo/baz.js`)
+- `{0..-2}.json`: change the extension to `.json` (`foo/baz.js -> foo/baz.json`)
+- `root/{0..-2}`: move the entire path to a different root (`foo/baz.js -> root/foo/baz.js`)
+- `{0..-3}/prefix_{-2..-1}`: add a prefix to the file name (`foo/baz.js -> foo/prefix_baz.js`)
+- `{0..-3}/{-2}_postfix{-1}`: add a postfix to the file name (`foo/baz.js -> foo/baz_postfix.js`)
+- `{0..-3}/sub/{-2..-1}`: add a sub directory (`foo/baz.js -> foo/sub/baz.js`)
+
 ---
 
 For the API documentation, go to the package corresponding to your programming language:
