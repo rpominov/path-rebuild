@@ -50,7 +50,7 @@ let commit = (result, status) => {
   }
 }
 
-let printError = (str, i, msg) => Error(`${msg}:\n${str}\n${" "->repeat(i)}^`)
+let printError = (str, i, msg) => Error(`${msg}\n${str}\n${" "->repeat(i)}^`)
 
 let rec parse = (str, i, mStatus, mResult: result<array<node>, string>) => {
   switch mResult {

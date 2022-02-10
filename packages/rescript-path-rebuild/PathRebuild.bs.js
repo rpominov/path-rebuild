@@ -93,7 +93,7 @@ function commit(result, status) {
 function printError(str, i, msg) {
   return {
           TAG: /* Error */1,
-          _0: msg + ":\n" + str + "\n" + " ".repeat(i) + "^"
+          _0: msg + "\n" + str + "\n" + " ".repeat(i) + "^"
         };
 }
 
