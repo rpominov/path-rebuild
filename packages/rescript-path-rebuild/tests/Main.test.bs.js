@@ -213,7 +213,7 @@ test("Default separator", (function () {
 
 test("Absolute path", (function () {
         var transform = Belt_Result.getExn(PathRebuild.make("{0..-3}/{-2}.js"));
-        expect(msg(Curry._2(transform, undefined, Process.platform === "win32" ? "C:\\file.sql" : "/file.sql"))).toMatchSnapshot();
+        expect(msg(Curry._2(transform, undefined, Process.platform === "win32" ? "C:\\file.sql" : "/file.sql")).includes("An absolute path cannot be used")).toBe(true);
         
       }));
 

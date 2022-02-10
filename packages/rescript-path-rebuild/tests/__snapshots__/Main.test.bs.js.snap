@@ -1,10 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Absolute path 1`] = `
-"An absolute path cannot be used as a source path:
-/file.sql"
-`;
-
 exports[`Parse errors {-2}.js% 1`] = `
 "Unexpected end of string. Expected a character after the escape symbol %
 {-2}.js%

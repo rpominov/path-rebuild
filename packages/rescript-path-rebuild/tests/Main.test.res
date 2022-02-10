@@ -79,7 +79,12 @@ test("Default separator", () => {
 
 test("Absolute path", () => {
   let transform = "{0..-3}/{-2}.js"->make->Belt.Result.getExn
-  (platform === "win32" ? "C:\\file.sql" : "/file.sql")->transform->msg->expect->toMatchSnapshot
+  (platform === "win32" ? "C:\\file.sql" : "/file.sql")
+  ->transform
+  ->msg
+  ->Js.String2.includes("An absolute path cannot be used")
+  ->expect
+  ->toBe(true)
 })
 
 test("transformExn parse error", () => {
