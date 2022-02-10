@@ -50,7 +50,7 @@ let commit = (result, status) => {
   }
 }
 
-let printError = (str, i, msg) => Error(`${str}\n${" "->repeat(i)}^\n${msg}`)
+let printError = (str, i, msg) => Error(`${msg}:\n${str}\n${" "->repeat(i)}^`)
 
 let rec parse = (str, i, mStatus, mResult: result<array<node>, string>) => {
   switch mResult {
@@ -117,7 +117,7 @@ let rec printRange = (parts, min, max, sep) => {
 
 let print = (~sep=osPathSep, nodes, path): result<string, string> => {
   if path->isAbsolute {
-    Error("An absolute path cannot be used as a source path")
+    Error(`An absolute path cannot be used as a source path:\n${path}`)
   } else {
     let ext = path->extname
     let withoutExt =
@@ -151,24 +151,19 @@ let print = (~sep=osPathSep, nodes, path): result<string, string> => {
   }
 }
 
-let make = str =>
-  switch parse(str) {
+let make = pattern =>
+  switch parse(pattern) {
   | Ok(nodes) => Ok((~sep=?, path) => print(~sep?, nodes, path))
   | Error(m) => Error(m)
   }
 
-// exception ParseError({message: string})
-// exception PrintError({message: string})
-
-// let parseExn = str =>
-//   switch parse(str) {
-//   | Ok(x) => x
-//   | Error(m) => raise(ParseError({message: m}))
-//   }
-
-// let printExn = (~sep=?, nodes, path) => {
-//   switch print(~sep?, nodes, path) {
-//   | Ok(x) => x
-//   | Error(m) => raise(PrintError({message: m}))
-//   }
-// }
+let transformExn = pattern =>
+  switch parse(pattern) {
+  | Ok(nodes) =>
+    (~sep=?, path) =>
+      switch print(~sep?, nodes, path) {
+      | Ok(result) => result
+      | Error(message) => Js.Exn.raiseError(message)
+      }
+  | Error(message) => Js.Exn.raiseError(message)
+  }

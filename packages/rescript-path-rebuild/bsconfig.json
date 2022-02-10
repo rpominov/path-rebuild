@@ -1,6 +1,6 @@
 {
   "name": "rescript-path-rebuild",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "namespace": false,
   "sources": [
     { "dir": ".", "subdirs": false },

@@ -1,6 +1,6 @@
 {
   "name": "path-rebuild",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Transform a file path by splitting the original path into an array of parts and defining a new path in terms of indices of the parts",
   "main": "./index.js",
   "scripts": {},
@@ -21,6 +21,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "rescript-path-rebuild": "^0.0.1"
+    "rescript-path-rebuild": "^0.1.0"
   }
 }

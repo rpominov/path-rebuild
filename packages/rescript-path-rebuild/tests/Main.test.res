@@ -78,3 +78,33 @@ test("Absolute path", () => {
   // TODO: use different path depending on platform
   "/file.sql"->transform->msg->expect->toMatchSnapshot
 })
+
+test("transformExn parse error", () => {
+  let err = try {
+    Ok(transformExn("foo/{-2.."))
+  } catch {
+  | Js.Exn.Error(err) =>
+    switch Js.Exn.message(err) {
+    | Some(m) => Error(m)
+    | None => Error("Without message")
+    }
+  }
+  expect(err->msg)->toMatchSnapshot
+})
+
+test("transformExn print error", () => {
+  let err = try {
+    Ok(transformExn("{0..-1}", "/foo/bar.js"))
+  } catch {
+  | Js.Exn.Error(err) =>
+    switch Js.Exn.message(err) {
+    | Some(m) => Error(m)
+    | None => Error("Without message")
+    }
+  }
+  expect(err->msg)->toMatchSnapshot
+})
+
+test("transformExn no errors", () => {
+  expect(transformExn(~sep="/", "{0..-2}.json", "foo/bar.js"))->toBe("foo/bar.json")
+})

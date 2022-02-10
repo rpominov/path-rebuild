@@ -93,7 +93,7 @@ function commit(result, status) {
 function printError(str, i, msg) {
   return {
           TAG: /* Error */1,
-          _0: str + "\n" + " ".repeat(i) + "^\n" + msg
+          _0: msg + ":\n" + str + "\n" + " ".repeat(i) + "^"
         };
 }
 
@@ -338,8 +338,63 @@ function printRange(parts, min, max, sep) {
   }
 }
 
-function make(str) {
-  var nodes = parse(str);
+function print(sepOpt, nodes, path) {
+  var sep = sepOpt !== undefined ? sepOpt : Path.sep;
+  if (Path.isAbsolute(path)) {
+    return {
+            TAG: /* Error */1,
+            _0: "An absolute path cannot be used as a source path:\n" + path
+          };
+  }
+  var ext = Path.extname(path);
+  var withoutExt = path.substring(0, path.length - ext.length | 0);
+  var parts = withoutExt.split(sep).concat(ext);
+  var len = parts.length;
+  var norm = nodes.map(function (node) {
+        if (typeof node === "number") {
+          return node;
+        }
+        if (node.TAG !== /* Range */0) {
+          return node;
+        }
+        var max = node._1;
+        var min = node._0;
+        var min$1 = Math.max(0, min < 0 ? len + min | 0 : min);
+        var max$1 = Math.min(len - 1 | 0, max < 0 ? len + max | 0 : max);
+        if (max$1 < min$1) {
+          return ;
+        } else {
+          return {
+                  TAG: /* Range */0,
+                  _0: min$1,
+                  _1: max$1
+                };
+        }
+      });
+  return {
+          TAG: /* Ok */0,
+          _0: norm.map(function (node, i) {
+                    if (node !== undefined) {
+                      if (typeof node === "number") {
+                        if (i > 0 && norm[i - 1 | 0] === undefined) {
+                          return [];
+                        } else {
+                          return [sep];
+                        }
+                      } else if (node.TAG === /* Range */0) {
+                        return [printRange(parts, node._0, node._1, sep)];
+                      } else {
+                        return [node._0];
+                      }
+                    } else {
+                      return [];
+                    }
+                  }).flat().join("")
+        };
+}
+
+function make(pattern) {
+  var nodes = parse(pattern);
   if (nodes.TAG !== /* Ok */0) {
     return {
             TAG: /* Error */1,
@@ -350,61 +405,27 @@ function make(str) {
   return {
           TAG: /* Ok */0,
           _0: (function (sep, path) {
-              var sep$1 = sep !== undefined ? sep : Path.sep;
-              if (Path.isAbsolute(path)) {
-                return {
-                        TAG: /* Error */1,
-                        _0: "An absolute path cannot be used as a source path"
-                      };
-              }
-              var ext = Path.extname(path);
-              var withoutExt = path.substring(0, path.length - ext.length | 0);
-              var parts = withoutExt.split(sep$1).concat(ext);
-              var len = parts.length;
-              var norm = nodes$1.map(function (node) {
-                    if (typeof node === "number") {
-                      return node;
-                    }
-                    if (node.TAG !== /* Range */0) {
-                      return node;
-                    }
-                    var max = node._1;
-                    var min = node._0;
-                    var min$1 = Math.max(0, min < 0 ? len + min | 0 : min);
-                    var max$1 = Math.min(len - 1 | 0, max < 0 ? len + max | 0 : max);
-                    if (max$1 < min$1) {
-                      return ;
-                    } else {
-                      return {
-                              TAG: /* Range */0,
-                              _0: min$1,
-                              _1: max$1
-                            };
-                    }
-                  });
-              return {
-                      TAG: /* Ok */0,
-                      _0: norm.map(function (node, i) {
-                                if (node !== undefined) {
-                                  if (typeof node === "number") {
-                                    if (i > 0 && norm[i - 1 | 0] === undefined) {
-                                      return [];
-                                    } else {
-                                      return [sep$1];
-                                    }
-                                  } else if (node.TAG === /* Range */0) {
-                                    return [printRange(parts, node._0, node._1, sep$1)];
-                                  } else {
-                                    return [node._0];
-                                  }
-                                } else {
-                                  return [];
-                                }
-                              }).flat().join("")
-                    };
+              return print(sep, nodes$1, path);
             })
         };
 }
 
+function transformExn(pattern) {
+  var nodes = parse(pattern);
+  if (nodes.TAG !== /* Ok */0) {
+    return Js_exn.raiseError(nodes._0);
+  }
+  var nodes$1 = nodes._0;
+  return function (sep, path) {
+    var result = print(sep, nodes$1, path);
+    if (result.TAG === /* Ok */0) {
+      return result._0;
+    } else {
+      return Js_exn.raiseError(result._0);
+    }
+  };
+}
+
 exports.make = make;
+exports.transformExn = transformExn;
 /* path Not a pure module */

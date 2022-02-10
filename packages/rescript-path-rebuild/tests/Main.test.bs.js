@@ -6,6 +6,7 @@ var Curry = require("@rescript/std/lib/js/curry.js");
 var Js_exn = require("@rescript/std/lib/js/js_exn.js");
 var Belt_Result = require("@rescript/std/lib/js/belt_Result.js");
 var PathRebuild = require("../PathRebuild.bs.js");
+var Caml_js_exceptions = require("@rescript/std/lib/js/caml_js_exceptions.js");
 
 function msg(err) {
   if (err.TAG === /* Ok */0) {
@@ -193,6 +194,65 @@ test("Default separator", (function () {
 test("Absolute path", (function () {
         var transform = Belt_Result.getExn(PathRebuild.make("{0..-3}/{-2}.js"));
         expect(msg(Curry._2(transform, undefined, "/file.sql"))).toMatchSnapshot();
+        
+      }));
+
+test("transformExn parse error", (function () {
+        var err;
+        try {
+          err = {
+            TAG: /* Ok */0,
+            _0: PathRebuild.transformExn("foo/{-2..")
+          };
+        }
+        catch (raw_err){
+          var err$1 = Caml_js_exceptions.internalToOCamlException(raw_err);
+          if (err$1.RE_EXN_ID === Js_exn.$$Error) {
+            var m = err$1._1.message;
+            err = m !== undefined ? ({
+                  TAG: /* Error */1,
+                  _0: m
+                }) : ({
+                  TAG: /* Error */1,
+                  _0: "Without message"
+                });
+          } else {
+            throw err$1;
+          }
+        }
+        expect(msg(err)).toMatchSnapshot();
+        
+      }));
+
+test("transformExn print error", (function () {
+        var err;
+        try {
+          err = {
+            TAG: /* Ok */0,
+            _0: PathRebuild.transformExn("{0..-1}")(undefined, "/foo/bar.js")
+          };
+        }
+        catch (raw_err){
+          var err$1 = Caml_js_exceptions.internalToOCamlException(raw_err);
+          if (err$1.RE_EXN_ID === Js_exn.$$Error) {
+            var m = err$1._1.message;
+            err = m !== undefined ? ({
+                  TAG: /* Error */1,
+                  _0: m
+                }) : ({
+                  TAG: /* Error */1,
+                  _0: "Without message"
+                });
+          } else {
+            throw err$1;
+          }
+        }
+        expect(msg(err)).toMatchSnapshot();
+        
+      }));
+
+test("transformExn no errors", (function () {
+        expect(PathRebuild.transformExn("{0..-2}.json")("/", "foo/bar.js")).toBe("foo/bar.json");
         
       }));
 

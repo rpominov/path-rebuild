@@ -34,8 +34,12 @@ switch PathRebuild.make("new_root/{0}_new/{1..-3}/{-2}.json") {
 | Error(msg) => Js.Console.error(msg)
 | Ok(transform) =>
   switch transform("some/path/to/a/file.js") {
-  | Ok(newPath) => Js.Console.log(newPath) // "new_root/some_new/path/to/a/file.json"
+  // logs "new_root/some_new/path/to/a/file.json"
+  | Ok(newPath) => Js.Console.log(newPath)
   | Error(msg) => Js.Console.error(msg)
   }
 }
+
+// logs "new_root/some_new/path/to/a/file.json"
+transformExn("new_root/{0}_new/{1..-3}/{-2}.json", "some/path/to/a/file.js")->Js.Console.log
 ```
