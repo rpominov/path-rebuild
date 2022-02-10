@@ -67,19 +67,20 @@ let rec parse = (str, i, mStatus, mResult: result<array<node>, string>) => {
           printError(
             str,
             i,
-            "Unexpected end of string. Expected a character after the escape symbol",
+            "Unexpected end of string. Expected a character after the escape symbol %",
           )
         | ("", _) =>
           printError(str, i, "Unexpected end of string. Did you forget to close a range?")
-        | ("\\", L(s)) => parse(str, i', S(s)->Some, mResult)
+        | ("%", L(s)) => parse(str, i', S(s)->Some, mResult)
         | (_, S(s)) => parse(str, i', L(s ++ ch)->Some, mResult)
-        | ("\\", _) => printError(str, i, "Unexpected escape symbol inside a range")
+        | ("%", _) => printError(str, i, "Unexpected escape symbol % inside a range")
         | ("{", L(_)) => parse(str, i', I("")->Some, result->commit(status))
         | ("{", _) => printError(str, i, "Unexpected { symbol inside a range")
         | ("}", I(_))
         | ("}", R(_, _)) =>
           parse(str, i', L("")->Some, result->commit(status))
         | ("}", _) => printError(str, i, "Unexpected } symbol")
+        | (".", I("")) => printError(str, i, "Unexpected . symbol")
         | (".", I(n)) => parse(str, i', D(n)->Some, mResult)
         | (".", D(n)) => parse(str, i', R(n, "")->Some, mResult)
         | (x, D(_)) => printError(str, i, `Unexpected character: ${x}. Was expecting a . symbol`)

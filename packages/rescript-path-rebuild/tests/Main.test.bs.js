@@ -23,12 +23,12 @@ Jest.each([
       "test/{-1..-2}/{-2}.js",
       "test/{1..0a}/{-2}.js",
       "test/{0a}/{-2}.js",
-      "{-2}.js\\",
+      "{-2}.js%",
       "foo/{-2..",
       "test/{1..2.1}/{-2}.js",
       "test/{1...2}/{-2}.js",
       "test/{1.2}/{-2}.js",
-      "test/{1\\..2}/{-2}.js",
+      "test/{1%..2}/{-2}.js",
       "test/{1{..2}/{-2}.js",
       "test/{1/..2}/{-2}.js",
       "test}/{1..2}/{-2}.js"
@@ -172,6 +172,21 @@ Jest.each3([
         "{0..-4}/{-2}.js",
         "a/b/c/d/file.sql",
         "a/b/c/file.js"
+      ],
+      [
+        "%{",
+        "file.sql",
+        "{"
+      ],
+      [
+        "%%",
+        "file.sql",
+        "%"
+      ],
+      [
+        "{10}%/",
+        "file.sql",
+        "/"
       ]
     ], "Transform %s + %s = %s", (function (pattern, path, result) {
         var transform = Belt_Result.getExn(PathRebuild.make(pattern));

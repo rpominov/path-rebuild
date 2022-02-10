@@ -14,12 +14,12 @@ let msg = err =>
   "test/{-1..-2}/{-2}.js",
   "test/{1..0a}/{-2}.js",
   "test/{0a}/{-2}.js",
-  "{-2}.js\\",
+  "{-2}.js%",
   "foo/{-2..",
   "test/{1..2.1}/{-2}.js",
   "test/{1...2}/{-2}.js",
   "test/{1.2}/{-2}.js",
-  "test/{1\..2}/{-2}.js",
+  "test/{1%..2}/{-2}.js",
   "test/{1{..2}/{-2}.js",
   "test/{1/..2}/{-2}.js",
   "test}/{1..2}/{-2}.js",
@@ -53,6 +53,9 @@ let msg = err =>
   ("/{0..-1}", "a/b/file.sql", "/a/b/file.sql"),
   ("{0..-3}/{-2}.js", "file.sql", "file.js"),
   ("{0..-4}/{-2}.js", "a/b/c/d/file.sql", "a/b/c/file.js"),
+  ("%{", "file.sql", "{"),
+  ("%%", "file.sql", "%"),
+  ("{10}%/", "file.sql", "/"),
 ]->each3("Transform %s + %s = %s", (pattern, path, result) => {
   let transform = pattern->make->Belt.Result.getExn
   path->transform(~sep="/")->Belt.Result.getExn->expect->toBe(result)

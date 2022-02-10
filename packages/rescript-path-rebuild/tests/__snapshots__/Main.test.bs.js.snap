@@ -5,9 +5,9 @@ exports[`Absolute path 1`] = `
 /file.sql"
 `;
 
-exports[`Parse errors {-2}.js\\ 1`] = `
-"Unexpected end of string. Expected a character after the escape symbol
-{-2}.js\\\\
+exports[`Parse errors {-2}.js% 1`] = `
+"Unexpected end of string. Expected a character after the escape symbol %
+{-2}.js%
         ^"
 `;
 
@@ -33,6 +33,12 @@ exports[`Parse errors test/{0a}/{-2}.js 1`] = `
 "Bad range limit: 0a
 test/{0a}/{-2}.js
         ^"
+`;
+
+exports[`Parse errors test/{1%..2}/{-2}.js 1`] = `
+"Unexpected escape symbol % inside a range
+test/{1%..2}/{-2}.js
+       ^"
 `;
 
 exports[`Parse errors test/{1...2}/{-2}.js 1`] = `
@@ -68,12 +74,6 @@ test/{1.2}/{-2}.js
 exports[`Parse errors test/{1/..2}/{-2}.js 1`] = `
 "Unexpected / symbol inside a range
 test/{1/..2}/{-2}.js
-       ^"
-`;
-
-exports[`Parse errors test/{1\\..2}/{-2}.js 1`] = `
-"Unexpected escape symbol inside a range
-test/{1\\\\..2}/{-2}.js
        ^"
 `;
 

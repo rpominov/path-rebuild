@@ -137,10 +137,26 @@ function parse(str) {
                 _i = i$p;
                 continue ;
             case /* S */1 :
-                return printError(str, i, "Unexpected end of string. Expected a character after the escape symbol");
+                return printError(str, i, "Unexpected end of string. Expected a character after the escape symbol %");
             default:
               return printError(str, i, "Unexpected end of string. Did you forget to close a range?");
           }
+      case "%" :
+          switch (mStatus.TAG | 0) {
+            case /* L */0 :
+                _mStatus = {
+                  TAG: /* S */1,
+                  _0: mStatus._0
+                };
+                _i = i$p;
+                continue ;
+            case /* S */1 :
+                exit$4 = 6;
+                break;
+            default:
+              exit$3 = 5;
+          }
+          break;
       case "." :
           switch (mStatus.TAG | 0) {
             case /* L */0 :
@@ -150,9 +166,13 @@ function parse(str) {
                 exit$4 = 6;
                 break;
             case /* I */2 :
+                var n = mStatus._0;
+                if (n === "") {
+                  return printError(str, i, "Unexpected . symbol");
+                }
                 _mStatus = {
                   TAG: /* D */3,
-                  _0: mStatus._0
+                  _0: n
                 };
                 _i = i$p;
                 continue ;
@@ -199,22 +219,6 @@ function parse(str) {
                 exit$1 = 3;
                 break;
             
-          }
-          break;
-      case "\\" :
-          switch (mStatus.TAG | 0) {
-            case /* L */0 :
-                _mStatus = {
-                  TAG: /* S */1,
-                  _0: mStatus._0
-                };
-                _i = i$p;
-                continue ;
-            case /* S */1 :
-                exit$4 = 6;
-                break;
-            default:
-              exit$3 = 5;
           }
           break;
       case "{" :
@@ -266,8 +270,8 @@ function parse(str) {
     }
     if (exit$3 === 5) {
       switch (ch) {
-        case "\\" :
-            return printError(str, i, "Unexpected escape symbol inside a range");
+        case "%" :
+            return printError(str, i, "Unexpected escape symbol % inside a range");
         case "{" :
             return printError(str, i, "Unexpected { symbol inside a range");
         case "}" :

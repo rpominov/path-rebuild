@@ -12,7 +12,34 @@ and defining a new path in terms of indices of the parts:
 
 ```
 
-For further documentation, go to the package corresponding to your programming language:
+### Pattern syntax
+
+- `{n}`: insert the `n`'th part of the source path
+- `{n..m}`: insert `n` through `m` (inclusive) parts of the source path
+- `/`: insert a platform dependent separator (`\` for Windows, `/` for Linux etc.)
+- `%{`: insert a `{` character
+- `%/`: insert a `/` character
+- `%%`: insert a `%` character
+
+Where `n` and `m` can be negative numbers, indicating an offset from the end of the parts sequence.
+`-1` corresponds to the last item.
+A range like `{n}` or `{n..m}` can collapse if there’re no parts corresponding to the parameters.
+For example, with the source path `foo/bar.ext`, `{3}` will collapse
+since it refers to the 4’th item while there’re only 3. Same with `{-5..-4}`.
+
+If a range collapses, and it’s followed by a separator symbol `/`, that separator will be ignored.
+For example, with the source path `foo/bar.ext` and pattern `{-5..-4}/{-3..-1}`
+the output will be `foo/bar.ext`, not `/foo/bar.ext`.
+
+When a range like `{n..m}` is interpreted, a platform dependent separator is inserted between the parts.
+Except the last part! The last part corresponds to the file extension,
+as defined by [path.extname(path)](https://nodejs.org/api/path.html#pathextnamepath).
+When the last part is a part of a range, nothing is inserted between it and the previous part.
+If the source path has no extension `{-1}` will correspond to `""`.
+
+---
+
+For the API documentation, go to the package corresponding to your programming language:
 
 - [JavaScript](./packages/path-rebuild)
 - [ReScript](./packages/rescript-path-rebuild)
