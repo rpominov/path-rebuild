@@ -18,6 +18,7 @@ and defining a new path in terms of indices of the parts:
 - `{n..m}`: insert `n` through `m` (inclusive) parts of the source path
 - `/`: insert a platform dependent separator (`\` for Windows, `/` for Linux etc.)
 - `%{`: insert a `{` character
+- `%}`: insert a `}` character
 - `%/`: insert a `/` character
 - `%%`: insert a `%` character
 
