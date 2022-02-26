@@ -5,7 +5,7 @@
   "main": "./index.js",
   "scripts": {
     "test": "jest",
-    "build": "rollup --config rollup.config.js"
+    "build": "npx esbuild source.js --bundle --outfile=index.js --platform=node --analyze"
   },
   "keywords": [
     "path",
