@@ -1,13 +1,20 @@
+const { sep } = require("path");
+
 module.exports = {
   resolveSnapshotPath: (testPath, snapshotExtension) => {
     return (
-      testPath.replace("/lib/js/tests/", "/tests/__snapshots__/") +
-      snapshotExtension
+      testPath.replace(
+        `${sep}lib${sep}js${sep}tests${sep}`,
+        `${sep}tests${sep}__snapshots__${sep}`
+      ) + snapshotExtension
     );
   },
   resolveTestPath: (snapshotFilePath, snapshotExtension) => {
     return snapshotFilePath
-      .replace("/tests/__snapshots__/", "/lib/js/tests/")
+      .replace(
+        `${sep}tests${sep}__snapshots__${sep}`,
+        `${sep}lib${sep}js${sep}tests${sep}`
+      )
       .slice(0, -snapshotExtension.length);
   },
   testPathForConsistencyCheck:
