@@ -1,22 +1,29 @@
-const { sep } = require("path");
+const path = require("path");
+const { transformExn } = require("../lib/js/PathRebuild.bs.js");
 
 module.exports = {
   resolveSnapshotPath: (testPath, snapshotExtension) => {
+    const { root } = path.parse(testPath);
     return (
-      testPath.replace(
-        `${sep}lib${sep}js${sep}tests${sep}`,
-        `${sep}tests${sep}__snapshots__${sep}`
-      ) + snapshotExtension
+      root +
+      transformExn(`{0..-6}/{-3}/__snapshots__/{-2..-1}${snapshotExtension}`)(
+        undefined,
+        testPath.slice(root.length)
+      )
     );
   },
   resolveTestPath: (snapshotFilePath, snapshotExtension) => {
-    return snapshotFilePath
-      .replace(
-        `${sep}tests${sep}__snapshots__${sep}`,
-        `${sep}lib${sep}js${sep}tests${sep}`
+    const { root } = path.parse(snapshotFilePath);
+    return (
+      root +
+      transformExn("{0..-5}/lib/js/{-4}/{-2}")(
+        undefined,
+        snapshotFilePath.slice(root.length)
       )
-      .slice(0, -snapshotExtension.length);
+    );
   },
   testPathForConsistencyCheck:
-    "/projects/path-rebuild/packages/rescript-path-rebuild/lib/js/tests/Main.test.bs.js",
+    "/rescript-path-rebuild/lib/js/tests/Main.test.bs.js"
+      .split("/")
+      .join(path.sep),
 };
