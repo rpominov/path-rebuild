@@ -7,7 +7,7 @@
   "scripts": {
     "test": "npm test --workspaces --if-present",
     "build": "npm run build --workspace packages/rescript-path-rebuild --workspace packages/path-rebuild",
-    "publish": "npm publish --workspace packages/path-rebuild --workspace packages/rescript-path-rebuild"
+    "publish": "npm publish --workspace packages/rescript-path-rebuild --workspace packages/path-rebuild"
   },
   "devDependencies": {
     "esbuild": "^0.14.23",
