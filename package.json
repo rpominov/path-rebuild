@@ -6,7 +6,7 @@
   ],
   "scripts": {
     "test": "npm test --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build --workspace packages/rescript-path-rebuild --workspace packages/path-rebuild",
     "publish": "npm publish --workspace packages/path-rebuild --workspace packages/rescript-path-rebuild"
   },
   "devDependencies": {
