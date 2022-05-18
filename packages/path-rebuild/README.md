@@ -23,10 +23,10 @@ npm i path-rebuild
 ```js
 const { createTransform } = require("path-rebuild");
 
-const transfrom = createTransform("new_root/{1..0}_new/{1..-3}/{-2}.json");
+const transform = createTransform("new_root/{1..0}_new/{1..-3}/{-2}.json");
 
 // will log "new_root/some_new/path/to/a/file.json"
-console.log(transfrom("some/path/to/a/file.js"));
+console.log(transform("some/path/to/a/file.js"));
 ```
 
 ## API

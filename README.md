@@ -14,30 +14,115 @@ and defining a new path in terms of indices of the parts:
 
 ### Pattern syntax
 
+#### Separator
+
+`/` is a special character. It will be replaced with a [platform dependent separator](https://nodejs.org/api/path.html#pathsep) in the final output.
+
+Examples:
+
+```js
+// On Windows
+
+const transform = createTransform("{0..-3}/sub/{-2..-1}");
+transform("foo\\bar.js"); // -> foo\sub\bar.js
+```
+
+```js
+// On Linux
+
+const transform = createTransform("{0..-3}/sub/{-2..-1}");
+transform("foo/bar.js"); // -> foo/sub/bar.js
+```
+
+#### Numerical ranges
+
 - `{n}`: insert the `n`'th part of the source path
 - `{n..m}`: insert `n` through `m` (inclusive) parts of the source path
-- `/`: insert a platform dependent separator (`\` for Windows, `/` for Linux etc.)
-- `%{`: insert a `{` character
-- `%}`: insert a `}` character
-- `%/`: insert a `/` character
-- `%%`: insert a `%` character
 
 Where `n` and `m` can be negative numbers, indicating an offset from the end of the parts sequence.
 `-1` corresponds to the last item.
 
-A range like `{n}` or `{n..m}` can collapse if there’re no parts corresponding to the parameters.
-For example, with the source path `foo/bar.ext`, `{3}` will collapse
-since it refers to the 4’th item while there’re only 3. Same with `{-5..-4}`.
+A range can collapse if there’re no parts corresponding to the parameters.
+If a range collapses, and it’s followed by the separator symbol `/`, it will be ignored:
 
-If a range collapses, and it’s followed by a separator symbol `/`, that separator will be ignored.
-For example, with the source path `foo/bar.ext` and pattern `{-5..-4}/{-3..-1}`
-the output will be `foo/bar.ext`, not `/foo/bar.ext`.
+```js
+const transform = createTransform("{-5..-4}/{-3..-1}");
 
-When a range like `{n..m}` is interpreted, a platform dependent separator is inserted between the parts.
-Except the last part! The last part corresponds to the file extension,
-as defined by [path.extname(path)](https://nodejs.org/api/path.html#pathextnamepath).
-When the last part is a part of a range, nothing is inserted between it and the previous part.
-If the source path has no extension, `{-1}` will correspond to `""`.
+// {-5..-4} -> collapsed
+// / -> ignored, because the preceding range has collapsed
+// {-3..-1} -> foo/bar.js
+transform("foo/bar.js"); // -> foo/bar.js
+```
+
+When a range like `{n..m}` is interpreted,
+a [platform dependent separator](https://nodejs.org/api/path.html#pathsep) is inserted between the parts.
+But not before the part that corresponds to the [file extension](https://nodejs.org/api/path.html#pathextnamepath):
+
+```js
+const transform = createTransform("{-3..-1}");
+
+// -3 -> bar
+// -2 -> baz
+// -1 -> .js
+// `/` is inserted between `bar` and `baz`, but not before `.js`
+transform("foo/bar/baz.js"); // -> bar/baz.js
+```
+
+For the consistency, if the source path has no extension,
+`-1` will correspond to an empty string:
+
+```js
+const transform = createTransform("{-3..-1}");
+
+// -3 -> bar
+// -2 -> baz
+// -1 ->
+transform("foo/bar/baz"); // -> bar/baz
+```
+
+#### Predefined ranges
+
+You can also use special ranges derived from [path.parse()](https://nodejs.org/api/path.html#pathparsepath).
+
+```
+┌─────────────────────┬────────────┐
+│          dir        │    base    │
+├──────┬              ├──────┬─────┤
+│ root │              │ name │ ext │
+"  /    home/user/dir / file  .txt "
+└──────┴──────────────┴──────┴─────┘
+```
+
+- `{root}`: inserts `parsed.root`,
+- `{dir}`: insert `parsed.dir` and so on
+
+```js
+const transform = createTransform("{dir}/sub/{name}.json");
+transform("foo/bar.js"); // -> foo/sub/bar.json
+```
+
+#### Root
+
+The root as defined by `path.parse()` cannot be inserted using the [numerical ranges](#numerical-ranges).
+If the path to be transformed has a root, it will be stripped before splitting the path into the parts.
+If you want to have the root in your final path, make it explicit using `{root}` or `{dir}`:
+
+```js
+const withoutRoot = createTransform("{0..-2}.json");
+const withRoot = createTransform("{root}{0..-2}.json");
+
+withoutRoot("/foo/bar.js"); // -> foo/bar.json
+withRoot("/foo/bar.js"); // -> /foo/bar.json
+```
+
+#### Escaping
+
+`%` is the escape character.
+
+- `%{`: inserts a `{`
+- `%}`: inserts a `}`
+- `%/`: inserts a `/`
+- `%%`: inserts a `%`
 
 ### Examples
 
