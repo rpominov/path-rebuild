@@ -12,9 +12,23 @@ and defining a new path in terms of indices of the parts:
 
 ```
 
-### Pattern syntax
+Examples:
 
-#### Separator
+- `{0..-1}`: no modifications (`foo/baz.js -> foo/baz.js`)
+- `{0..-2}.json`: change the extension to `.json` (`foo/baz.js -> foo/baz.json`)
+- `root/{0..-1}`: move the entire path to a different root (`foo/baz.js -> root/foo/baz.js`)
+- `{0..-3}/prefix_{-2..-1}`: add a prefix to the file name (`foo/baz.js -> foo/prefix_baz.js`)
+- `{0..-3}/{-2}_postfix{-1}`: add a postfix to the file name (`foo/baz.js -> foo/baz_postfix.js`)
+- `{0..-3}/sub/{-2..-1}`: add a sub directory (`foo/baz.js -> foo/sub/baz.js`)
+
+---
+
+For the API documentation, go to the package corresponding to your programming language:
+
+- [JavaScript](./packages/path-rebuild)
+- [ReScript](./packages/rescript-path-rebuild)
+
+### Separator
 
 `/` is a special character. It will be replaced with a [platform dependent separator](https://nodejs.org/api/path.html#pathsep) in the final output.
 
@@ -34,7 +48,7 @@ const transform = createTransform("{0..-3}/sub/{-2..-1}");
 transform("foo/bar.js"); // -> foo/sub/bar.js
 ```
 
-#### Numerical ranges
+### Numerical ranges
 
 - `{n}`: insert the `n`'th part of the source path
 - `{n..m}`: insert `n` through `m` (inclusive) parts of the source path
@@ -80,7 +94,7 @@ const transform = createTransform("{-3..-1}");
 transform("foo/bar/baz"); // -> bar/baz
 ```
 
-#### Predefined ranges
+### Predefined ranges
 
 You can also use special ranges derived from [path.parse()](https://nodejs.org/api/path.html#pathparsepath).
 
@@ -101,7 +115,7 @@ const transform = createTransform("{dir}/sub/{name}.json");
 transform("foo/bar.js"); // -> foo/sub/bar.json
 ```
 
-#### Root
+### Root
 
 The root as defined by `path.parse()` cannot be inserted using the [numerical ranges](#numerical-ranges).
 If the path to be transformed has a root, it will be stripped before splitting the path into the parts.
@@ -115,7 +129,7 @@ withoutRoot("/foo/bar.js"); // -> foo/bar.json
 withRoot("/foo/bar.js"); // -> /foo/bar.json
 ```
 
-#### Escaping
+### Escaping
 
 `%` is the escape character.
 
@@ -123,19 +137,3 @@ withRoot("/foo/bar.js"); // -> /foo/bar.json
 - `%}`: inserts a `}`
 - `%/`: inserts a `/`
 - `%%`: inserts a `%`
-
-### Examples
-
-- `{0..-1}`: no modifications (`foo/baz.js -> foo/baz.js`)
-- `{0..-2}.json`: change the extension to `.json` (`foo/baz.js -> foo/baz.json`)
-- `root/{0..-1}`: move the entire path to a different root (`foo/baz.js -> root/foo/baz.js`)
-- `{0..-3}/prefix_{-2..-1}`: add a prefix to the file name (`foo/baz.js -> foo/prefix_baz.js`)
-- `{0..-3}/{-2}_postfix{-1}`: add a postfix to the file name (`foo/baz.js -> foo/baz_postfix.js`)
-- `{0..-3}/sub/{-2..-1}`: add a sub directory (`foo/baz.js -> foo/sub/baz.js`)
-
----
-
-For the API documentation, go to the package corresponding to your programming language:
-
-- [JavaScript](./packages/path-rebuild)
-- [ReScript](./packages/rescript-path-rebuild)
