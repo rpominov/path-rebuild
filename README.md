@@ -6,9 +6,9 @@ and defining a new path in terms of indices of the parts:
 ```
        "some/path/to/a/file.js"
                   ↓
-["some", "path", "to", "a", "file", ".js"]  +  "new_root/{0}_new/{1..-3}/{-2}.json"
+["some", "path", "to", "a", "file", ".js"]  +  "new_home/{0}_new/{1..-3}/{-2}.json"
                                             ↓
-                          "new_root/some_new/path/to/a/file.json"
+                          "new_home/some_new/path/to/a/file.json"
 
 ```
 
@@ -16,7 +16,7 @@ Examples:
 
 - `{0..-1}`: no modifications (`foo/baz.js -> foo/baz.js`)
 - `{0..-2}.json`: change the extension to `.json` (`foo/baz.js -> foo/baz.json`)
-- `root/{0..-1}`: move the entire path to a different root (`foo/baz.js -> root/foo/baz.js`)
+- `dir/{0..-1}`: move the entire path to a different directory (`foo/baz.js -> dir/foo/baz.js`)
 - `{0..-3}/prefix_{-2..-1}`: add a prefix to the file name (`foo/baz.js -> foo/prefix_baz.js`)
 - `{0..-3}/{-2}_postfix{-1}`: add a postfix to the file name (`foo/baz.js -> foo/baz_postfix.js`)
 - `{0..-3}/sub/{-2..-1}`: add a sub directory (`foo/baz.js -> foo/sub/baz.js`)
