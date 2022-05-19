@@ -30,41 +30,21 @@ In your `bsconfig.json` add it to `bs-dependencies`
 ## Example
 
 ```rescript
-switch PathRebuild.make("new_root/{0}_new/{1..-3}/{-2}.json") {
-| Error(msg) => Js.Console.error(msg)
-| Ok(transform) =>
-  switch transform("some/path/to/a/file.js") {
-  // will log "new_root/some_new/path/to/a/file.json"
-  | Ok(newPath) => Js.Console.log(newPath)
-  | Error(msg) => Js.Console.error(msg)
-  }
-}
-
-// will log "new_root/some_new/path/to/a/file.json"
-transformExn("new_root/{0}_new/{1..-3}/{-2}.json", "some/path/to/a/file.js")->Js.Console.log
+let transform = PathRebuild.make("{0..-2}.json")->Belt.Result.getExn
+transform("path/file.js")->Js.log // -> path/file.json
 ```
 
 ## API
 
-### `make: string => result<(~sep: string=?, string) => result<string, string>, string>`
+### `make: string => result<(~sep: string=?, string) => string, string>`
 
-Turns a pattern into a transform function. Returns a `result` because parsing the pattern may produce a error.
-
-The transform function takes a source path and returns a path transformed according to the pattern. It also returns a `result` that will be a `Error` if the source path is unsupported (currently the only such canse is an absolute paths that the library doesn't support).
+Turns a pattern into a transform function,
+which takes a source path and returns a path transformed according to the pattern.
+Returns a `result` because parsing a pattern may produce a error.
 
 You can also pass a custom separator.
 It will be used to split the source path into parts,
 and will be inserted in place of `/` in the pattern.
 By default [path.sep](https://nodejs.org/api/path.html#pathsep) is used.
 
-For the `pattern` syntax documentation go [here](https://github.com/rpominov/path-rebuild#pattern-syntax).
-
-### `transformExn: (string, ~sep: string=?, string) => string`
-
-Same as `make`, but instead of returning a result both functions throw exceptions (`Js.Exn.Error`).
-
-Since we ended up with a function that returns a function,
-it's merged into a single function due to first class support of currying.
-But you still can take advantage of the caching of the pattern parsing result,
-if you call `transformExn` with one argument,
-and then use the remaining curried function multiple times.
+For the pattern syntax documentation go [here](https://github.com/rpominov/path-rebuild).

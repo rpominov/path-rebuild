@@ -1,6 +1,3 @@
-import { transformExn } from "rescript-path-rebuild/lib/es6/PathRebuild.bs.js";
+import { __jsEndpoint } from "rescript-path-rebuild/lib/es6/PathRebuild.bs.js";
 
-export const createTransform = (pattern) => {
-  const fn = transformExn(pattern);
-  return (path, sep) => fn(sep, path);
-};
+export const createTransform = __jsEndpoint;

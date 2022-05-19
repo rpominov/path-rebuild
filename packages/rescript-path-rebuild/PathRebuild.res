@@ -4,12 +4,24 @@ module I = Belt.Int
 module E = Js.Exn
 module M = Js.Math
 
-type node = Sep | Range(int, int) | Literal(string)
-type status = L(string) | S(string) | I(string) | D(string) | R(string, string)
+type node =
+  Sep | Range(int, int) | Literal(string) | PredefinedRange([#root | #dir | #base | #name | #ext])
+type status =
+  | L(string) // Parsing a literal
+  | S(string) // Parsing a literal, the prev character was an escape character
+  | I(string) // Parsing a range, seen 0 dots
+  | D(string) // Parsing a range, seen 1 dot
+  | R(string, string) // Parsing a range, seen 2 dots
 
 @module("path") external osPathSep: string = "sep"
-@module("path") external isAbsolute: string => bool = "isAbsolute"
-@module("path") external extname: string => string = "extname"
+@module("path")
+external parsePath: string => {
+  "root": string,
+  "dir": string,
+  "base": string,
+  "name": string,
+  "ext": string,
+} = "parse"
 
 @val external int: string => float = "Number"
 let int = str => {
@@ -26,10 +38,19 @@ let commit = (result, status) => {
   | L("") => result->Ok
   | L(s) => result->append(Literal(s))->Ok
   | I(n) =>
-    switch n->int {
-    | Some(n') => result->append(Range(n', n'))->Ok
-    | None => Error(`Bad range limit: ${n}`)
+    switch n {
+    | "root" => result->append(PredefinedRange(#root))->Ok
+    | "dir" => result->append(PredefinedRange(#dir))->Ok
+    | "base" => result->append(PredefinedRange(#base))->Ok
+    | "name" => result->append(PredefinedRange(#name))->Ok
+    | "ext" => result->append(PredefinedRange(#ext))->Ok
+    | _ =>
+      switch n->int {
+      | Some(n') => result->append(Range(n', n'))->Ok
+      | None => Error(`Bad range limit: ${n}`)
+      }
     }
+
   | R(n, m) =>
     switch n->int {
     | Some(n') =>
@@ -57,59 +78,54 @@ let commit = (result, status) => {
 
 let printError = (str, i, msg) => Error(`${msg}\n${str}\n${" "->repeat(i)}^`)
 
-let rec parse = (str, i, mStatus, mResult: result<array<node>, string>) => {
+let rec parse = (str, i, status, mResult: result<array<node>, string>) => {
   switch mResult {
   | Error(s) => printError(str, i - 1, s)
-  | Ok(result) =>
-    switch mStatus {
-    | None => Ok(result)
-    | Some(status) => {
-        let ch = str->S.charAt(i)
-        let i' = i + 1
-        switch (ch, status) {
-        | ("", L(_)) => parse(str, i', None, result->commit(status))
-        | ("", S(_)) =>
-          printError(
-            str,
-            i,
-            "Unexpected end of string. Expected a character after the escape symbol %",
-          )
-        | ("", _) =>
-          printError(str, i, "Unexpected end of string. Did you forget to close a range?")
-        | ("%", L(s)) => parse(str, i', S(s)->Some, mResult)
-        | (_, S(s)) => parse(str, i', L(s ++ ch)->Some, mResult)
-        | ("%", _) => printError(str, i, "Unexpected escape symbol % inside a range")
-        | ("{", L(_)) => parse(str, i', I("")->Some, result->commit(status))
-        | ("{", _) => printError(str, i, "Unexpected { symbol inside a range")
-        | ("}", I(_))
-        | ("}", R(_, _)) =>
-          parse(str, i', L("")->Some, result->commit(status))
-        | ("}", _) => printError(str, i, "Unexpected } symbol")
-        | (".", I("")) => printError(str, i, "Unexpected . symbol")
-        | (".", I(n)) => parse(str, i', D(n)->Some, mResult)
-        | (".", D(n)) => parse(str, i', R(n, "")->Some, mResult)
-        | (x, D(_)) => printError(str, i, `Unexpected character: ${x}. Was expecting a . symbol`)
-        | (".", R(_, _)) => printError(str, i, "Unexpected . symbol")
-        | ("/", L(_)) =>
-          parse(
-            str,
-            i',
-            L("")->Some,
-            switch result->commit(status) {
-            | Ok(r) => r->append(Sep)->Ok
-            | Error(m) => Error(m)
-            },
-          )
-        | ("/", _) => printError(str, i, "Unexpected / symbol inside a range")
-        | (_, L(s)) => parse(str, i', L(s ++ ch)->Some, mResult)
-        | (_, I(n)) => parse(str, i', I(n ++ ch)->Some, mResult)
-        | (_, R(n, m)) => parse(str, i', R(n, m ++ ch)->Some, mResult)
-        }
+  | Ok(result) => {
+      let ch = str->S.charAt(i)
+      let i' = i + 1
+      switch (ch, status) {
+      | ("", L(_)) => result->commit(status)
+      | ("", S(_)) =>
+        printError(
+          str,
+          i,
+          "Unexpected end of string. Expected a character after the escape symbol %",
+        )
+      | ("", _) => printError(str, i, "Unexpected end of string. Did you forget to close a range?")
+      | ("%", L(s)) => parse(str, i', S(s), mResult)
+      | (_, S(s)) => parse(str, i', L(s ++ ch), mResult)
+      | ("%", _) => printError(str, i, "Unexpected escape symbol % inside a range")
+      | ("{", L(_)) => parse(str, i', I(""), result->commit(status))
+      | ("{", _) => printError(str, i, "Unexpected { symbol inside a range")
+      | ("}", I(_))
+      | ("}", R(_, _)) =>
+        parse(str, i', L(""), result->commit(status))
+      | ("}", _) => printError(str, i, "Unexpected } symbol")
+      | (".", I("")) => printError(str, i, "Unexpected . symbol")
+      | (".", I(n)) => parse(str, i', D(n), mResult)
+      | (".", D(n)) => parse(str, i', R(n, ""), mResult)
+      | (x, D(_)) => printError(str, i, `Unexpected character: ${x}. Was expecting a . symbol`)
+      | (".", R(_, _)) => printError(str, i, "Unexpected . symbol")
+      | ("/", L(_)) =>
+        parse(
+          str,
+          i',
+          L(""),
+          switch result->commit(status) {
+          | Ok(r) => r->append(Sep)->Ok
+          | Error(_) as err => err
+          },
+        )
+      | ("/", _) => printError(str, i, "Unexpected / symbol inside a range")
+      | (_, L(s)) => parse(str, i', L(s ++ ch), mResult)
+      | (_, I(n)) => parse(str, i', I(n ++ ch), mResult)
+      | (_, R(n, m)) => parse(str, i', R(n, m ++ ch), mResult)
       }
     }
   }
 }
-let parse = str => parse(str, 0, Some(L("")), Ok([]))
+let parse = str => parse(str, 0, L(""), Ok([]))
 
 let rec printRange = (parts, min, max, sep) => {
   if min === max {
@@ -121,35 +137,42 @@ let rec printRange = (parts, min, max, sep) => {
   }
 }
 
-let print = (~sep=osPathSep, nodes, path): result<string, string> => {
-  if path->isAbsolute {
-    Error(`An absolute path cannot be used as a source path:\n${path}`)
-  } else {
-    let ext = path->extname
-    let withoutExt = path->S.substring(~from=0, ~to_=path->S.length - ext->S.length)
-    let parts = withoutExt->S.split(sep)->append(ext)
-    let len = parts->A.length
+let print = (~sep=osPathSep, nodes, path): string => {
+  let parsed = path->parsePath
 
-    let rec helper = (result, i, skipSeparator) => {
-      if i === nodes->A.length {
-        result
-      } else {
-        switch nodes->A.unsafe_get(i) {
-        | Literal(s) => helper(result ++ s, i + 1, false)
-        | Sep => helper(result ++ (skipSeparator ? "" : sep), i + 1, false)
-        | Range(min, max) => {
-            let min = M.max_int(0, min < 0 ? len + min : min)
-            let max = M.min_int(len - 1, max < 0 ? len + max : max)
-            max < min
-              ? helper(result, i + 1, true)
-              : helper(result ++ printRange(parts, min, max, sep), i + 1, false)
-          }
+  let withoutRoot = path->S.sliceToEnd(~from=S.length(parsed["root"]))
+  let withoutExt =
+    withoutRoot->S.slice(~from=0, ~to_=S.length(withoutRoot) - S.length(parsed["ext"]))
+  let parts = withoutExt->S.split(sep)->append(parsed["ext"])
+
+  let rec loop = (result, i, skipSeparator) => {
+    if i === nodes->A.length {
+      result
+    } else {
+      switch nodes->A.unsafe_get(i) {
+      | PredefinedRange(#root) => loop(result ++ parsed["root"], i + 1, false)
+      | PredefinedRange(#dir) =>
+        loop(result ++ parsed["dir"], i + 1, parsed["dir"] === parsed["root"])
+      | PredefinedRange(#base) => loop(result ++ parsed["base"], i + 1, false)
+      | PredefinedRange(#name) => loop(result ++ parsed["name"], i + 1, false)
+      | PredefinedRange(#ext) => loop(result ++ parsed["ext"], i + 1, false)
+      | Literal(s) => loop(result ++ s, i + 1, false)
+      | Sep => loop(result ++ (skipSeparator ? "" : sep), i + 1, false)
+      | Range(min, max) => {
+          let len = parts->A.length
+          let min = M.max_int(0, min < 0 ? len + min : min)
+          let max = M.min_int(len - 1, max < 0 ? len + max : max)
+
+          // if range has collapsed, skip separator
+          max < min
+            ? loop(result, i + 1, true)
+            : loop(result ++ printRange(parts, min, max, sep), i + 1, false)
         }
       }
     }
-
-    helper("", 0, false)->Ok
   }
+
+  loop("", 0, false)
 }
 
 let make = pattern =>
@@ -158,13 +181,8 @@ let make = pattern =>
   | Error(m) => Error(m)
   }
 
-let transformExn = pattern =>
+let __jsEndpoint = pattern =>
   switch parse(pattern) {
-  | Ok(nodes) =>
-    (~sep=?, path) =>
-      switch print(~sep?, nodes, path) {
-      | Ok(result) => result
-      | Error(message) => E.raiseError(message)
-      }
+  | Ok(nodes) => (path, sep) => print(~sep?, nodes, path)
   | Error(message) => E.raiseError(message)
   }

@@ -1,29 +1,37 @@
-const path = require("path");
-const { transformExn } = require("../lib/js/PathRebuild.bs.js");
+const { sep } = require("path");
+
+const fixSep = (path) => path.split("/").join(sep);
 
 module.exports = {
   resolveSnapshotPath: (testPath, snapshotExtension) => {
-    const { root } = path.parse(testPath);
+    const pattern = fixSep("/lib/js/tests/");
+
+    // Make sure the input path looks as we expect
+    if (testPath.split(pattern).length !== 2) {
+      throw new Error(
+        "Cannot turn a test path into a snapshot path: " + testPath
+      );
+    }
+
     return (
-      root +
-      transformExn(`{0..-6}/{-3}/__snapshots__/{-2..-1}${snapshotExtension}`)(
-        undefined,
-        testPath.slice(root.length)
-      )
+      testPath.replace(pattern, fixSep("/tests/")).replace(".bs.js", ".res") +
+      snapshotExtension
     );
   },
-  resolveTestPath: (snapshotFilePath, snapshotExtension) => {
-    const { root } = path.parse(snapshotFilePath);
-    return (
-      root +
-      transformExn("{0..-5}/lib/js/{-4}/{-2}")(
-        undefined,
-        snapshotFilePath.slice(root.length)
-      )
-    );
+  resolveTestPath: (snapshotPath, snapshotExtension) => {
+    const pattern = fixSep("/tests/");
+
+    // Make sure the input path looks as we expect
+    if (snapshotPath.split(pattern).length !== 2) {
+      throw new Error(
+        "Cannot turn a snapshot path into a test path: " + snapshotPath
+      );
+    }
+
+    return snapshotPath
+      .replace(pattern, fixSep("/lib/js/tests/"))
+      .replace(".res", ".bs.js")
+      .slice(0, -snapshotExtension.length);
   },
-  testPathForConsistencyCheck:
-    "/rescript-path-rebuild/lib/js/tests/Main.test.bs.js"
-      .split("/")
-      .join(path.sep),
+  testPathForConsistencyCheck: fixSep("/root/lib/js/tests/Main.test.bs.js"),
 };

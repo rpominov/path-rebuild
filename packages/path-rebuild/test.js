@@ -8,14 +8,6 @@ test("parse error", () => {
   `);
 });
 
-test("print error", () => {
-  expect(() => createTransform("{0..-1}")("/foo/bar.js"))
-    .toThrowErrorMatchingInlineSnapshot(`
-    "An absolute path cannot be used as a source path:
-    /foo/bar.js"
-  `);
-});
-
 test("normal", () => {
   expect(createTransform("{0..-2}.json")("foo/bar.js")).toMatchInlineSnapshot(
     `"foo/bar.json"`

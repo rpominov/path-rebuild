@@ -6,6 +6,12 @@ exports[`Parse errors {-2}.js% 1`] = `
         ^"
 `;
 
+exports[`Parse errors {a} 1`] = `
+"Bad range limit: a
+{a}
+  ^"
+`;
+
 exports[`Parse errors foo/{-2.. 1`] = `
 "Unexpected end of string. Did you forget to close a range?
 foo/{-2..
@@ -88,15 +94,4 @@ exports[`Parse errors test}/{1..2}/{-2}.js 1`] = `
 "Unexpected } symbol
 test}/{1..2}/{-2}.js
     ^"
-`;
-
-exports[`transformExn parse error 1`] = `
-"Unexpected end of string. Did you forget to close a range?
-foo/{-2..
-         ^"
-`;
-
-exports[`transformExn print error 1`] = `
-"An absolute path cannot be used as a source path:
-/foo/bar.js"
 `;
