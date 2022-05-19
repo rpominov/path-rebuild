@@ -399,8 +399,8 @@ function printRange(parts, min, max, sep2) {
     return parts.slice(min, max + 1 | 0).join(sep2);
   }
 }
-function print(sepOpt, nodes, path) {
-  var sep2 = sepOpt !== void 0 ? sepOpt : Path.sep;
+function print(nodes, path) {
+  var sep2 = Path.sep;
   var parsed = Path.parse(path);
   var withoutRoot = path.slice(parsed.root.length);
   var withoutExt = withoutRoot.slice(0, withoutRoot.length - parsed.ext.length | 0);
@@ -483,8 +483,8 @@ function __jsEndpoint(pattern) {
     return raiseError(nodes._0);
   }
   var nodes$1 = nodes._0;
-  return function(path, sep2) {
-    return print(sep2, nodes$1, path);
+  return function(path) {
+    return print(nodes$1, path);
   };
 }
 

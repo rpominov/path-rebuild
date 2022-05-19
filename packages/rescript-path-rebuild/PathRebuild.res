@@ -137,7 +137,8 @@ let rec printRange = (parts, min, max, sep) => {
   }
 }
 
-let print = (~sep=osPathSep, nodes, path): string => {
+let print = (nodes, path): string => {
+  let sep = osPathSep
   let parsed = path->parsePath
 
   let withoutRoot = path->S.sliceToEnd(~from=S.length(parsed["root"]))
@@ -177,12 +178,12 @@ let print = (~sep=osPathSep, nodes, path): string => {
 
 let make = pattern =>
   switch parse(pattern) {
-  | Ok(nodes) => Ok((~sep=?, path) => print(~sep?, nodes, path))
+  | Ok(nodes) => Ok(path => print(nodes, path))
   | Error(m) => Error(m)
   }
 
 let __jsEndpoint = pattern =>
   switch parse(pattern) {
-  | Ok(nodes) => (path, sep) => print(~sep?, nodes, path)
+  | Ok(nodes) => path => print(nodes, path)
   | Error(message) => E.raiseError(message)
   }

@@ -33,6 +33,7 @@ test("Tail recursion complied to a loop", () => {
         ("{root}{0..-1}", "C:\\file.sql", "C:\\file.sql"),
         ("D:\\{0..-1}", "C:\\file.sql", "D:\\file.sql"),
         ("{dir}/{base}", "C:\\file.sql", "C:\\file.sql"),
+        ("{0..-4}/{-2}.js", "a\\b\\c\\d\\file.sql", "a\\b\\c\\file.js"),
       ]
     : [
         ("{0..-1}", "/file.sql", "file.sql"),
@@ -79,18 +80,4 @@ test("Tail recursion complied to a loop", () => {
 )->each3("Transform %s + %s = %s", (pattern, path, result) => {
   let transform = pattern->make->getOkExn(__LOC__)
   path->transform->expect->toBe(result)
-})
-
-test("Unconventional separator", () => {
-  let transform = "{0..-4}/{-2}.js"->make->getOkExn(__LOC__)
-  "a#b#c#d#file.sql"->transform(~sep="#")->expect->toBe("a#b#c#file.js")
-})
-
-test("Default separator", () => {
-  let transform = "{0..-4}/{-2}.js"->make->getOkExn(__LOC__)
-  if platform === "win32" {
-    "a\\b\\c\\d\\file.sql"->transform->expect->toEqual("a\\b\\c\\file.js")
-  } else {
-    "a/b/c/d/file.sql"->transform->expect->toEqual("a/b/c/file.js")
-  }
 })

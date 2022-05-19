@@ -36,15 +36,11 @@ transform("path/file.js")->Js.log // -> path/file.json
 
 ## API
 
-### `make: string => result<(~sep: string=?, string) => string, string>`
+### `make: string => result<string => string, string>`
 
 Turns a pattern into a transform function,
 which takes a source path and returns a path transformed according to the pattern.
-Returns a `result` because parsing a pattern may produce a error.
 
-You can also pass a custom separator.
-It will be used to split the source path into parts,
-and will be inserted in place of `/` in the pattern.
-By default [path.sep](https://nodejs.org/api/path.html#pathsep) is used.
+Returns a `result` because parsing a pattern may produce a error.
 
 For the pattern syntax documentation go [here](https://github.com/rpominov/path-rebuild).

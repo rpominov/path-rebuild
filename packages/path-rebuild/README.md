@@ -29,15 +29,10 @@ console.log(transform("path/file.js")); // -> path/file.json
 
 ## API
 
-### `createTransform(pattern: string): (sourcePath: string, [separator: string]) => string`
+### `createTransform(pattern: string): (sourcePath: string) => string`
 
 Creates a transform function. Throws a error if the `pattern` is incorrect.
 
 The transform function takes a `sourcePath` and returns a path transformed according to the `pattern`.
-
-You can also pass a custom separator.
-It will be used to split the `sourcePath` into parts,
-and will be inserted in place of `/` in the pattern.
-By default [path.sep](https://nodejs.org/api/path.html#pathsep) is used.
 
 For the pattern syntax documentation go [here](https://github.com/rpominov/path-rebuild).
