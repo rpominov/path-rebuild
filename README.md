@@ -107,8 +107,8 @@ You can also use special ranges derived from [path.parse()](https://nodejs.org/a
 └──────┴──────────────┴──────┴─────┘
 ```
 
-- `{root}`: inserts `parsed.root`,
-- `{dir}`: insert `parsed.dir` 
+- `{root}`: inserts `parsed.root`
+- `{dir}`: insert `parsed.dir`
 - ... and so on
 
 ```js
