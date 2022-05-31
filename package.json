@@ -13,5 +13,21 @@
     "esbuild": "^0.14.23",
     "jest": "^27.5.1",
     "prettier": "2.5.1"
+  },
+  "sdc-check": {
+    "options": {
+      "daysBeforeUpgradeToNewVersion": 7
+    },
+    "errors": [
+      "lockfile-is-not-safe",
+      "package-is-too-new",
+      "install-scripts",
+      "obfuscated-code",
+      "has-os-scripts",
+      "dangerous-shell-commands",
+      "released-after-long-period-of-inactivity",
+      "too-many-decision-makers",
+      "no-source-code"
+    ]
   }
 }
